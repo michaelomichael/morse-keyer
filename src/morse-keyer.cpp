@@ -13,34 +13,22 @@
 #define PRESSED LOW
 #define RELEASED HIGH
 
-unsigned long millisPerTick_m = 100;  // 70;
-unsigned long debounceMillis_m = 10;
+enum class Event { Keydown, KeydownBackspaceSent, KeyUp, LetterComplete, WordComplete };
 
+// Settings
+unsigned long millisPerTick_m = 70;
+unsigned long debounceMillis_m = 10;
 float newLetterThresholdInTicks_m = 7.0;
+float newWordThresholdInTicks_m = 8.0;
 float dashThresholdInTicks_m = 2.5;
-float whooshThresholdInTicks_m = 6.0;
-float backspaceRepeatInTicks_m = 3;
-float backspacePauseBeforeRepeatInTicks_m = 5;
+float backspaceRepeatInTicks_m = 7;
+float backspacePauseBeforeRepeatInTicks_m = 20;
 
 bool isTickOn_m = false;
 unsigned long lastTickTimestamp_m = 0;
 
-unsigned long keyerDownTimestamp_m = 0;
-
+Event lastEvent_m = Event::WordComplete;
 unsigned long lastEventTimeMillis_m = 0;
-#define EVENT_NONE -1
-#define EVENT_KEYDOWN 0
-#define EVENT_KEYDOWN_BACKSPACE_SENT 1
-#define EVENT_KEYDOWN_REPEAT_BACKSPACE_SENT 2
-int lastEvent_m = EVENT_NONE;
-
-bool hasKeyerBeenReleased_m = false;
-unsigned long keyerUpTimestamp_m = 0;
-
-unsigned long newLetterTimestamp_m = millis();
-bool isNewLetterTimestampSet_m = true;
-
-int lastKeyerState_m = RELEASED;
 
 String sentence_m = String("");
 String morseSymbolsInCurrentLetter_m = String("");
@@ -53,53 +41,73 @@ void setup() {
 
 void log(const char* text) { Serial.println(text); }
 
+void setLastEvent(Event newEvent) {
+    lastEvent_m = newEvent;
+    lastEventTimeMillis_m = millis();
+}
+
 void logCurrentSentence() {
     Serial.print("Sentence is now: [");
     Serial.print(sentence_m);
     Serial.println("]");
 }
 
+void sendBackspace() {
+    if (sentence_m.length() > 0) {
+        sentence_m.remove(sentence_m.length() - 1);
+        logCurrentSentence();
+    }
+}
+
+void debounce() { delay(debounceMillis_m); }
+
 void checkKeyerState() {
     int newKeyerState = digitalRead(KEYER_PIN);
 
-    if (newKeyerState == PRESSED && lastKeyerState_m == RELEASED &&
-        (millis() - keyerUpTimestamp_m > debounceMillis_m)) {
-        // Keyer has just been pressed
-        log("Keyer pressed");
+    unsigned long millisSinceLastEvent = millis() - lastEventTimeMillis_m;
 
-        lastEvent_m = EVENT_KEYDOWN;
-        lastEventTimeMillis_m = millis();
+    if (newKeyerState == PRESSED) {
+        if (lastEvent_m == Event::KeyUp || lastEvent_m == Event::LetterComplete || lastEvent_m == Event::WordComplete) {
+            log("Keyer pressed");
 
-        keyerDownTimestamp_m = millis();
-        isNewLetterTimestampSet_m = false;
-        lastKeyerState_m = newKeyerState;
+            setLastEvent(Event::Keydown);
+            debounce();
+        } else if (lastEvent_m == Event::Keydown &&
+                   millisSinceLastEvent > backspacePauseBeforeRepeatInTicks_m * millisPerTick_m) {
+            log("Initial backspace");
 
-    } else if (newKeyerState == RELEASED && lastKeyerState_m == PRESSED &&
-               (millis() - keyerDownTimestamp_m > debounceMillis_m)) {
-        log("Keyer released");
-        keyerUpTimestamp_m = millis();
+            sendBackspace();
+            debounce();
+            setLastEvent(Event::KeydownBackspaceSent);
+        } else if (lastEvent_m == Event::KeydownBackspaceSent &&
+                   millisSinceLastEvent > backspaceRepeatInTicks_m * millisPerTick_m) {
+            log("Repeat backspace");
+            sendBackspace();
+            setLastEvent(Event::KeydownBackspaceSent);
+        }
+    } else {
+        if (lastEvent_m == Event::Keydown) {
+            log("Keyer released");
 
-        unsigned long millisSinceKeyDown = keyerUpTimestamp_m - keyerDownTimestamp_m;
-
-        if (millisSinceKeyDown > whooshThresholdInTicks_m * millisPerTick_m) {
-            log("Backspace!");
-            if (sentence_m.length() > 0) {
-                sentence_m.remove(sentence_m.length() - 1);
-            }
-            logCurrentSentence();
-        } else {
-            bool isDot = (millisSinceKeyDown < dashThresholdInTicks_m * millisPerTick_m);
-
-            char c = isDot ? '.' : '-';
-            morseSymbolsInCurrentLetter_m.concat(c);
+            bool isDot = (millisSinceLastEvent < dashThresholdInTicks_m * millisPerTick_m);
+            morseSymbolsInCurrentLetter_m.concat(isDot ? '.' : '-');
 
             Serial.print("Keyer was pressed for ");
-            Serial.print(millisSinceKeyDown, DEC);
+            Serial.print(millisSinceLastEvent, DEC);
             Serial.print(" which is a ");
-            Serial.println(isDot ? "dot" : "dash");
+            Serial.print(isDot ? "dot" : "dash");
+            Serial.print(". Current word is [");
+            Serial.print(morseSymbolsInCurrentLetter_m);
+            Serial.println("].");
+
+            setLastEvent(Event::KeyUp);
+            debounce();
+        } else if (lastEvent_m == Event::KeydownBackspaceSent) {
+            log("Keyer released during backspacing");
+
+            setLastEvent(Event::WordComplete);
+            debounce();
         }
-        isNewLetterTimestampSet_m = false;
-        lastKeyerState_m = newKeyerState;
     }
 }
 
@@ -110,43 +118,28 @@ void appendCharToCurrentSentence(char c) {
 
 char getTranslatedLetter() {
     char letter = getLetterForMorseSymbols(morseSymbolsInCurrentLetter_m.c_str());
-    if (letter == NONE) {
-        return '%';
-    } else {
-        return letter;
-    }
+    return letter == NONE ? '%' : letter;
 }
 
 void tick() {
-    digitalWrite(LED_PIN, isTickOn_m);
+    analogWrite(LED_PIN, isTickOn_m ? 0 : 20);
     isTickOn_m = !isTickOn_m;
 
-    if (lastKeyerState_m == RELEASED) {
-        unsigned long currentTimestamp = millis();
-        unsigned long millisSinceKeyUp = currentTimestamp - keyerUpTimestamp_m;
+    unsigned long currentTimestamp = millis();
+    unsigned long millisSinceLastEvent = currentTimestamp - lastEventTimeMillis_m;
 
-        unsigned long millisSinceNewLetter = currentTimestamp - newLetterTimestamp_m;
+    if (lastEvent_m == Event::KeyUp && millisSinceLastEvent > newLetterThresholdInTicks_m * millisPerTick_m) {
+        log("New letter");
+        char newLetter = getTranslatedLetter();
+        appendCharToCurrentSentence(newLetter);
+        morseSymbolsInCurrentLetter_m = String("");
+        setLastEvent(Event::LetterComplete);
+    } else if (lastEvent_m == Event::LetterComplete &&
+               millisSinceLastEvent > newWordThresholdInTicks_m * millisPerTick_m) {
+        log("New word");
 
-        bool isNewWord = isNewLetterTimestampSet_m &&
-                         millisSinceNewLetter >= newLetterThresholdInTicks_m * millisPerTick_m &&
-                         millisSinceNewLetter < 8 * millisPerTick_m;
-
-        bool isNewLetter = millisSinceKeyUp > 3 * millisPerTick_m && morseSymbolsInCurrentLetter_m.length() > 0;
-
-        if (isNewWord) {
-            if (sentence_m.length() > 0) {
-                log("New word");
-                appendCharToCurrentSentence(' ');
-                morseSymbolsInCurrentLetter_m = String("");
-            }
-        } else if (isNewLetter) {
-            log("New letter");
-            char newLetter = getTranslatedLetter();
-            appendCharToCurrentSentence(newLetter);
-            morseSymbolsInCurrentLetter_m = String("");
-            newLetterTimestamp_m = millis();
-            isNewLetterTimestampSet_m = true;
-        }
+        appendCharToCurrentSentence(' ');
+        setLastEvent(Event::WordComplete);
     }
 }
 
