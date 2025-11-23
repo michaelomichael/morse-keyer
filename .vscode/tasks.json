@@ -1,0 +1,16 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "PIO: Clear & Test",
+      "type": "shell",
+      "command": "clear && ~/.platformio/penv/bin/platformio test --environment native",
+      "problemMatcher": ["$platformio"],
+      "presentation": {
+        "echo": true,
+        "panel": "shared",
+        "clear": true
+      }
+    }
+  ]
+}

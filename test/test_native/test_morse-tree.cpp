@@ -2,8 +2,7 @@
 
 #include "morse-tree.h"
 
-TEST(DummyTest, ShouldPass) { EXPECT_EQ(1, 1); }
-
+// TODO: Add tests for some invalid sequences
 TEST(MorseTree, ShouldDecodeToCorrectLetter) {
     EXPECT_EQ('a', getLetterForMorseSymbols(".-"));
     EXPECT_EQ('b', getLetterForMorseSymbols("-..."));
@@ -46,67 +45,3 @@ TEST(MorseTree, ShouldDecodeToCorrectLetter) {
     EXPECT_EQ('\'', getLetterForMorseSymbols(".----."));
     EXPECT_EQ('!', getLetterForMorseSymbols("-.-.--"));
 }
-
-void Sub1(int n) { EXPECT_EQ(n, 1); }
-
-#if defined(ARDUINO)
-#include <Arduino.h>
-
-void setup() {
-    // should be the same value as for the `test_speed` option in "platformio.ini"
-    // default value is test_speed=115200
-    Serial.begin(115200);
-
-    ::testing::InitGoogleTest();
-    // if you plan to use GMock, replace the line above with
-    // ::testing::InitGoogleMock();
-}
-
-void loop() {
-    // Run tests
-    if (RUN_ALL_TESTS())
-        ;
-
-    // sleep for 1 sec
-    delay(1000);
-}
-
-#else
-int main(int argc, char** argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    // if you plan to use GMock, replace the line above with
-    // ::testing::InitGoogleMock(&argc, argv);
-
-    if (RUN_ALL_TESTS())
-        ;
-
-    // Always return zero-code and allow PlatformIO to parse results
-    return 0;
-}
-#endif
-// #include "unity.h"
-
-// void test_tree_is_created() {
-//     Node* tree = createMorseTree();
-
-//     TEST_ASSERT_NOT_NULL(tree);
-//     TEST_ASSERT_EQUAL_CHAR(0, tree->letter);
-
-//     TEST_ASSERT_NOT_NULL(tree->dot);
-// }
-
-// void setUp(void) {
-//     // set stuff up here
-// }
-
-// void tearDown(void) {
-//     // clean stuff up here
-// }
-
-// int main() {
-//     UNITY_BEGIN();
-
-//     RUN_TEST(test_tree_is_created);
-
-//     return UNITY_END();
-// }

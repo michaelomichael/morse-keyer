@@ -1,10 +1,9 @@
 #if defined ARDUINO
 
-// #include "ArduinoWrapper.h"
-
 #include <Arduino.h>
 
 #include "morse-tree.h"
+#include "settings.h"
 
 #define KEYER_PIN 10
 #define LED_PIN LED_BUILTIN
@@ -13,16 +12,16 @@
 #define PRESSED LOW
 #define RELEASED HIGH
 
-enum class Event { Keydown, KeydownBackspaceSent, KeyUp, LetterComplete, WordComplete };
+enum class Event {
+    Keydown,
+    KeydownFirstBackspaceSent,
+    KeydownSecondBackspaceSent,
+    KeyUp,
+    LetterComplete,
+    WordComplete
+};
 
-// Settings
-unsigned long millisPerTick_m = 70;
-unsigned long debounceMillis_m = 10;
-float newLetterThresholdInTicks_m = 7.0;
-float newWordThresholdInTicks_m = 8.0;
-float dashThresholdInTicks_m = 2.5;
-float backspaceRepeatInTicks_m = 7;
-float backspacePauseBeforeRepeatInTicks_m = 20;
+Settings* settings;
 
 bool isTickOn_m = false;
 unsigned long lastTickTimestamp_m = 0;
@@ -37,9 +36,14 @@ void setup() {
     Serial.begin(9600);
     pinMode(KEYER_PIN, INPUT_PULLUP);
     pinMode(LED_PIN, OUTPUT);
+    settings = initSettings();
 }
 
-void log(const char* text) { Serial.println(text); }
+void log(const char* text) {
+    if (settings->loggingEnabled) {
+        Serial.println(text);
+    }
+}
 
 void setLastEvent(Event newEvent) {
     lastEvent_m = newEvent;
@@ -47,9 +51,11 @@ void setLastEvent(Event newEvent) {
 }
 
 void logCurrentSentence() {
-    Serial.print("Sentence is now: [");
-    Serial.print(sentence_m);
-    Serial.println("]");
+    if (settings->loggingEnabled) {
+        Serial.print("Sentence is now: [");
+        Serial.print(sentence_m);
+        Serial.println("]");
+    }
 }
 
 void sendBackspace() {
@@ -59,7 +65,7 @@ void sendBackspace() {
     }
 }
 
-void debounce() { delay(debounceMillis_m); }
+void debounce() { delay(settings->debounceMillis); }
 
 void checkKeyerState() {
     int newKeyerState = digitalRead(KEYER_PIN);
@@ -72,37 +78,46 @@ void checkKeyerState() {
 
             setLastEvent(Event::Keydown);
             debounce();
-        } else if (lastEvent_m == Event::Keydown &&
-                   millisSinceLastEvent > backspacePauseBeforeRepeatInTicks_m * millisPerTick_m) {
+        } else if (lastEvent_m == Event::Keydown && millisSinceLastEvent > settings->firstBackspaceMillis) {
             log("Initial backspace");
 
             sendBackspace();
             debounce();
-            setLastEvent(Event::KeydownBackspaceSent);
-        } else if (lastEvent_m == Event::KeydownBackspaceSent &&
-                   millisSinceLastEvent > backspaceRepeatInTicks_m * millisPerTick_m) {
+            setLastEvent(Event::KeydownFirstBackspaceSent);
+        } else if (lastEvent_m == Event::KeydownFirstBackspaceSent &&
+                   millisSinceLastEvent > settings->repeatBackspaceMillis) {
+            // TODO - add an intermediate pause check between the first backspace and the repeats,
+            //        so we get a chance to release before the repeats kick in, but also can do
+            //        fast repeats once they get going.
             log("Repeat backspace");
             sendBackspace();
-            setLastEvent(Event::KeydownBackspaceSent);
+            setLastEvent(Event::KeydownFirstBackspaceSent);
         }
     } else {
         if (lastEvent_m == Event::Keydown) {
             log("Keyer released");
 
-            bool isDot = (millisSinceLastEvent < dashThresholdInTicks_m * millisPerTick_m);
-            morseSymbolsInCurrentLetter_m.concat(isDot ? '.' : '-');
+            bool isDot = (millisSinceLastEvent < settings->dashMillis);
 
-            Serial.print("Keyer was pressed for ");
-            Serial.print(millisSinceLastEvent, DEC);
-            Serial.print(" which is a ");
-            Serial.print(isDot ? "dot" : "dash");
-            Serial.print(". Current word is [");
-            Serial.print(morseSymbolsInCurrentLetter_m);
-            Serial.println("].");
+            if (morseSymbolsInCurrentLetter_m.length() > MAX_MORSE_SYMBOLS_PER_LETTER) {
+                log("Too many symbols added for this letter already. Will discard this one.");
+            } else {
+                morseSymbolsInCurrentLetter_m.concat(isDot ? '.' : '-');
+            }
+
+            if (settings->loggingEnabled) {
+                Serial.print("Keyer was pressed for ");
+                Serial.print(millisSinceLastEvent, DEC);
+                Serial.print(" which is a ");
+                Serial.print(isDot ? "dot" : "dash");
+                Serial.print(". Current word is [");
+                Serial.print(morseSymbolsInCurrentLetter_m);
+                Serial.println("].");
+            }
 
             setLastEvent(Event::KeyUp);
             debounce();
-        } else if (lastEvent_m == Event::KeydownBackspaceSent) {
+        } else if (lastEvent_m == Event::KeydownFirstBackspaceSent) {
             log("Keyer released during backspacing");
 
             setLastEvent(Event::WordComplete);
@@ -112,6 +127,9 @@ void checkKeyerState() {
 }
 
 void appendCharToCurrentSentence(char c) {
+    if (sentence_m.length() > MAX_SENTENCE_CHARS) {
+        sentence_m = String("");
+    }
     sentence_m.concat(c);
     logCurrentSentence();
 }
@@ -128,14 +146,13 @@ void tick() {
     unsigned long currentTimestamp = millis();
     unsigned long millisSinceLastEvent = currentTimestamp - lastEventTimeMillis_m;
 
-    if (lastEvent_m == Event::KeyUp && millisSinceLastEvent > newLetterThresholdInTicks_m * millisPerTick_m) {
+    if (lastEvent_m == Event::KeyUp && millisSinceLastEvent > settings->newLetterMillis) {
         log("New letter");
         char newLetter = getTranslatedLetter();
         appendCharToCurrentSentence(newLetter);
         morseSymbolsInCurrentLetter_m = String("");
         setLastEvent(Event::LetterComplete);
-    } else if (lastEvent_m == Event::LetterComplete &&
-               millisSinceLastEvent > newWordThresholdInTicks_m * millisPerTick_m) {
+    } else if (lastEvent_m == Event::LetterComplete && millisSinceLastEvent > settings->newWordMillis) {
         log("New word");
 
         appendCharToCurrentSentence(' ');
@@ -146,7 +163,7 @@ void tick() {
 void loop() {
     unsigned long currentTimestamp = millis();
 
-    if (currentTimestamp - lastTickTimestamp_m > millisPerTick_m) {
+    if (currentTimestamp - lastTickTimestamp_m > settings->tickMillis) {
         lastTickTimestamp_m = currentTimestamp;
         tick();
     }

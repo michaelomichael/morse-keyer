@@ -91,7 +91,7 @@ Node* root = createMorseTree();
 
 char getLetterForMorseSymbols(const char* morseSymbols) {
     Node* node = root;
-    for (int i = 0; i < strlen(morseSymbols); i++) {
+    for (unsigned int i = 0; i < strlen(morseSymbols); i++) {
         if (node == NULL) {
             return NONE;
         }
