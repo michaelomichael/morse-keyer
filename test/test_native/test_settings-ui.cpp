@@ -1,5 +1,440 @@
 #include <gmock/gmock.h>
 
+#include "serial-adapter.h"
 #include "settings-ui.h"
 
-TEST(DummyTest, ShouldPass2) { EXPECT_EQ(1, 1); }
+using ::testing::InSequence;
+using ::testing::Return;
+
+bool SerialAdapter::isLineReady() { return false; }
+const char* SerialAdapter::readWord() { return NULL; }
+const bool* SerialAdapter::readBool() { return NULL; }
+const float* SerialAdapter::readFloat() { return NULL; }
+const unsigned long* SerialAdapter::readUnsignedLong() { return NULL; }
+bool SerialAdapter::skipRestOfLine() { return false; }
+void SerialAdapter::write(const char* str) {}
+void SerialAdapter::writeBool(bool value) {}
+void SerialAdapter::writeFloat(float value) {}
+void SerialAdapter::writeUnsignedLong(unsigned long value) {}
+
+void SettingsStorage::load() {}
+void SettingsStorage::save() {}
+
+class MockSettingsStorage : public SettingsStorage {
+   public:
+    MockSettingsStorage() : SettingsStorage() {}
+    MOCK_METHOD(void, load, (), (override));
+    MOCK_METHOD(void, save, (), (override));
+};
+
+class MockSerialAdapter : public SerialAdapter {
+   public:
+    MockSerialAdapter() : SerialAdapter(NULL) {}
+    MOCK_METHOD(bool, isLineReady, (), (override));
+    MOCK_METHOD(const char*, readWord, (), (override));
+    MOCK_METHOD(bool*, readBool, (), (override));
+    MOCK_METHOD(float*, readFloat, (), (override));
+    MOCK_METHOD(unsigned long*, readUnsignedLong, (), (override));
+    MOCK_METHOD(bool, skipRestOfLine, (), (override));
+    MOCK_METHOD(void, write, (const char* str), (override));
+    MOCK_METHOD(void, writeBool, (bool value), (override));
+    MOCK_METHOD(void, writeFloat, (float value), (override));
+    MOCK_METHOD(void, writeUnsignedLong, (unsigned long value), (override));
+};
+
+void initToKnownValues(StoredSettings* settings) {
+    settings->loggingEnabled = true;
+    settings->tickDurationMillis = 70;
+    settings->debounceMillis = 10;
+    settings->ticksBeforeNewLetter = 7.0;
+    settings->ticksBeforeNewWord = 8.0;
+    settings->ticksBeforeDash = 2.5;
+    settings->ticksBeforeFirstBackspace = 20.0;
+    settings->ticksBeforeSecondBackspace = 13.0;
+    settings->ticksBeforeRepeatBackspace = 7.0;
+    settings->toneVolumePercent = 50;
+    settings->toneFrequency = 440;
+}
+
+TEST(ListSettingsCommand, ShouldInitializeAndTick) {
+    MockSerialAdapter adapter;
+    SettingsUi underTest(&adapter, NULL);
+
+    EXPECT_CALL(adapter, isLineReady()).Times(1).WillRepeatedly(Return(false));
+
+    underTest.tick();
+}
+
+TEST(UnknownCommand, ShouldPrintError) {
+    MockSerialAdapter adapter;
+    SettingsUi underTest(&adapter, NULL);
+
+    {
+        InSequence seq;
+        EXPECT_CALL(adapter, isLineReady()).WillOnce(Return(true));
+        EXPECT_CALL(adapter, readWord()).WillOnce(Return((const char*)"unknown_command"));
+        EXPECT_CALL(adapter, skipRestOfLine()).WillOnce(Return(true));
+        EXPECT_CALL(adapter, isLineReady()).WillOnce(Return(false));
+    }
+    {
+        InSequence seq;
+        EXPECT_CALL(adapter, write("ERR: Unknown command: '"));
+        EXPECT_CALL(adapter, write("unknown_command"));
+        EXPECT_CALL(adapter, write("'.\n"));
+    }
+
+    underTest.tick();
+}
+
+TEST(ListSettings, ShouldPrintSettings) {
+    MockSerialAdapter adapter;
+    SettingsStorage storage;
+    initToKnownValues(storage.get());
+    SettingsUi underTest(&adapter, &storage);
+    const char* command = "list";
+
+    {
+        InSequence seq;
+        EXPECT_CALL(adapter, isLineReady()).WillOnce(Return(true));
+        EXPECT_CALL(adapter, readWord()).WillOnce(Return(command));
+        EXPECT_CALL(adapter, skipRestOfLine()).WillOnce(Return(true));
+        EXPECT_CALL(adapter, isLineReady()).WillOnce(Return(false));
+    }
+    {
+        InSequence seq;
+        EXPECT_CALL(adapter, write("OK: 11\n"));
+
+        EXPECT_CALL(adapter, write("  "));
+        EXPECT_CALL(adapter, write("loggingEnabled"));
+        EXPECT_CALL(adapter, write(" = "));
+        EXPECT_CALL(adapter, writeBool(true));
+        EXPECT_CALL(adapter, write("\n"));
+
+        EXPECT_CALL(adapter, write("  "));
+        EXPECT_CALL(adapter, write("tickDurationMillis"));
+        EXPECT_CALL(adapter, write(" = "));
+        EXPECT_CALL(adapter, writeUnsignedLong(70));
+        EXPECT_CALL(adapter, write("\n"));
+
+        EXPECT_CALL(adapter, write("  "));
+        EXPECT_CALL(adapter, write("debounceMillis"));
+        EXPECT_CALL(adapter, write(" = "));
+        EXPECT_CALL(adapter, writeUnsignedLong(10));
+        EXPECT_CALL(adapter, write("\n"));
+
+        EXPECT_CALL(adapter, write("  "));
+        EXPECT_CALL(adapter, write("ticksBeforeNewLetter"));
+        EXPECT_CALL(adapter, write(" = "));
+        EXPECT_CALL(adapter, writeFloat(7.0));
+        EXPECT_CALL(adapter, write("\n"));
+
+        EXPECT_CALL(adapter, write("  "));
+        EXPECT_CALL(adapter, write("ticksBeforeNewWord"));
+        EXPECT_CALL(adapter, write(" = "));
+        EXPECT_CALL(adapter, writeFloat(8.0));
+        EXPECT_CALL(adapter, write("\n"));
+
+        EXPECT_CALL(adapter, write("  "));
+        EXPECT_CALL(adapter, write("ticksBeforeDash"));
+        EXPECT_CALL(adapter, write(" = "));
+        EXPECT_CALL(adapter, writeFloat(2.5));
+        EXPECT_CALL(adapter, write("\n"));
+
+        EXPECT_CALL(adapter, write("  "));
+        EXPECT_CALL(adapter, write("ticksBeforeFirstBackspace"));
+        EXPECT_CALL(adapter, write(" = "));
+        EXPECT_CALL(adapter, writeFloat(20.0));
+        EXPECT_CALL(adapter, write("\n"));
+
+        EXPECT_CALL(adapter, write("  "));
+        EXPECT_CALL(adapter, write("ticksBeforeSecondBackspace"));
+        EXPECT_CALL(adapter, write(" = "));
+        EXPECT_CALL(adapter, writeFloat(13.0));
+        EXPECT_CALL(adapter, write("\n"));
+
+        EXPECT_CALL(adapter, write("  "));
+        EXPECT_CALL(adapter, write("ticksBeforeRepeatBackspace"));
+        EXPECT_CALL(adapter, write(" = "));
+        EXPECT_CALL(adapter, writeFloat(7.0));
+        EXPECT_CALL(adapter, write("\n"));
+
+        EXPECT_CALL(adapter, write("  "));
+        EXPECT_CALL(adapter, write("toneVolumePercent"));
+        EXPECT_CALL(adapter, write(" = "));
+        EXPECT_CALL(adapter, writeUnsignedLong(50));
+        EXPECT_CALL(adapter, write("\n"));
+
+        EXPECT_CALL(adapter, write("  "));
+        EXPECT_CALL(adapter, write("toneFrequency"));
+        EXPECT_CALL(adapter, write(" = "));
+        EXPECT_CALL(adapter, writeUnsignedLong(440));
+        EXPECT_CALL(adapter, write("\n"));
+    }
+    underTest.tick();
+}
+
+TEST(UpdateSetting, UnknownSettingKey) {
+    MockSerialAdapter adapter;
+    MockSettingsStorage storage;
+    initToKnownValues(storage.get());
+    SettingsUi underTest(&adapter, &storage);
+    const char* command = "set";
+    const char* settingKey = "unknown_key";
+
+    {
+        InSequence seq;
+        EXPECT_CALL(adapter, isLineReady()).WillOnce(Return(true));
+        EXPECT_CALL(adapter, readWord()).WillOnce(Return(command)).WillOnce(Return(settingKey));
+        EXPECT_CALL(adapter, skipRestOfLine()).WillOnce(Return(true));
+        EXPECT_CALL(adapter, isLineReady()).WillOnce(Return(false));
+    }
+    {
+        InSequence seq;
+        EXPECT_CALL(adapter, write("ERR: Unknown setting key '"));
+        EXPECT_CALL(adapter, write("unknown_key"));
+        EXPECT_CALL(adapter, write("'\n"));
+    }
+
+    underTest.tick();
+}
+
+TEST(UpdateSetting, InvalidBoolValue) {
+    MockSerialAdapter adapter;
+    MockSettingsStorage storage;
+    initToKnownValues(storage.get());
+    SettingsUi underTest(&adapter, &storage);
+    const char* command = "set";
+    const char* settingKey = "loggingEnabled";
+    bool newValue = false;
+    bool originalValue = storage.get()->loggingEnabled;
+
+    {
+        InSequence seq;
+        EXPECT_CALL(adapter, isLineReady()).WillOnce(Return(true));
+        EXPECT_CALL(adapter, readWord()).WillOnce(Return(command)).WillOnce(Return(settingKey));
+        EXPECT_CALL(adapter, readBool()).WillOnce(Return(nullptr));
+        EXPECT_CALL(adapter, skipRestOfLine()).WillOnce(Return(true));
+        EXPECT_CALL(adapter, isLineReady()).WillOnce(Return(false));
+    }
+
+    EXPECT_CALL(adapter, write("ERR: Invalid value received.\n"));
+
+    underTest.tick();
+
+    EXPECT_EQ(storage.get()->loggingEnabled, originalValue);
+}
+
+TEST(UpdateSetting, InvalidUnsignedLongValue) {
+    MockSerialAdapter adapter;
+    MockSettingsStorage storage;
+    initToKnownValues(storage.get());
+    SettingsUi underTest(&adapter, &storage);
+    const char* command = "set";
+    const char* settingKey = "tickDurationMillis";
+    unsigned long newValue = 42;
+    unsigned long originalValue = storage.get()->tickDurationMillis;
+
+    {
+        InSequence seq;
+        EXPECT_CALL(adapter, isLineReady()).WillOnce(Return(true));
+        EXPECT_CALL(adapter, readWord()).WillOnce(Return(command)).WillOnce(Return(settingKey));
+        EXPECT_CALL(adapter, readUnsignedLong()).WillOnce(Return(nullptr));
+        EXPECT_CALL(adapter, skipRestOfLine()).WillOnce(Return(true));
+        EXPECT_CALL(adapter, isLineReady()).WillOnce(Return(false));
+    }
+
+    EXPECT_CALL(adapter, write("ERR: Invalid value received.\n"));
+
+    underTest.tick();
+
+    EXPECT_EQ(storage.get()->tickDurationMillis, originalValue);
+}
+
+TEST(UpdateSetting, InvalidFloatValue) {
+    MockSerialAdapter adapter;
+    MockSettingsStorage storage;
+    initToKnownValues(storage.get());
+    SettingsUi underTest(&adapter, &storage);
+    const char* command = "set";
+    const char* settingKey = "ticksBeforeNewLetter";
+    float newValue = 99.99;
+    float originalValue = storage.get()->ticksBeforeNewLetter;
+
+    {
+        InSequence seq;
+        EXPECT_CALL(adapter, isLineReady()).WillOnce(Return(true));
+        EXPECT_CALL(adapter, readWord()).WillOnce(Return(command)).WillOnce(Return(settingKey));
+        EXPECT_CALL(adapter, readFloat()).WillOnce(Return(nullptr));
+        EXPECT_CALL(adapter, skipRestOfLine()).WillOnce(Return(true));
+        EXPECT_CALL(adapter, isLineReady()).WillOnce(Return(false));
+    }
+
+    EXPECT_CALL(adapter, write("ERR: Invalid value received.\n"));
+
+    underTest.tick();
+
+    EXPECT_EQ(storage.get()->ticksBeforeNewLetter, originalValue);
+}
+
+void expectSettings(StoredSettings* actual, StoredSettings* expected) {
+    EXPECT_EQ(actual->loggingEnabled, expected->loggingEnabled);
+    EXPECT_EQ(actual->tickDurationMillis, expected->tickDurationMillis);
+    EXPECT_EQ(actual->debounceMillis, expected->debounceMillis);
+    EXPECT_EQ(actual->ticksBeforeNewLetter, expected->ticksBeforeNewLetter);
+    EXPECT_EQ(actual->ticksBeforeNewWord, expected->ticksBeforeNewWord);
+    EXPECT_EQ(actual->ticksBeforeDash, expected->ticksBeforeDash);
+    EXPECT_EQ(actual->ticksBeforeFirstBackspace, expected->ticksBeforeFirstBackspace);
+    EXPECT_EQ(actual->ticksBeforeSecondBackspace, expected->ticksBeforeSecondBackspace);
+    EXPECT_EQ(actual->ticksBeforeRepeatBackspace, expected->ticksBeforeRepeatBackspace);
+    EXPECT_EQ(actual->toneVolumePercent, expected->toneVolumePercent);
+    EXPECT_EQ(actual->toneFrequency, expected->toneFrequency);
+}
+
+void setBoolTest(const char* settingKey, bool newValue, StoredSettings* expectedSettings) {
+    MockSerialAdapter adapter;
+    MockSettingsStorage storage;
+    initToKnownValues(storage.get());
+    SettingsUi underTest(&adapter, &storage);
+    const char* command = "set";
+
+    {
+        InSequence seq;
+        EXPECT_CALL(adapter, isLineReady()).WillOnce(Return(true));
+        EXPECT_CALL(adapter, readWord()).WillOnce(Return(command)).WillOnce(Return(settingKey));
+        EXPECT_CALL(adapter, readBool()).WillOnce(Return(&newValue));
+        EXPECT_CALL(adapter, skipRestOfLine()).WillOnce(Return(true));
+        EXPECT_CALL(adapter, isLineReady()).WillOnce(Return(false));
+    }
+
+    EXPECT_CALL(storage, save());
+    EXPECT_CALL(adapter, write("OK\n"));
+
+    underTest.tick();
+
+    expectSettings(storage.get(), expectedSettings);
+}
+
+void setUnsignedLongTest(const char* settingKey, unsigned long newValue, StoredSettings* expectedSettings) {
+    MockSerialAdapter adapter;
+    MockSettingsStorage storage;
+    initToKnownValues(storage.get());
+    SettingsUi underTest(&adapter, &storage);
+    const char* command = "set";
+
+    {
+        InSequence seq;
+        EXPECT_CALL(adapter, isLineReady()).WillOnce(Return(true));
+        EXPECT_CALL(adapter, readWord()).WillOnce(Return(command)).WillOnce(Return(settingKey));
+        EXPECT_CALL(adapter, readUnsignedLong()).WillOnce(Return(&newValue));
+        EXPECT_CALL(adapter, skipRestOfLine()).WillOnce(Return(true));
+        EXPECT_CALL(adapter, isLineReady()).WillOnce(Return(false));
+    }
+
+    EXPECT_CALL(storage, save());
+    EXPECT_CALL(adapter, write("OK\n"));
+
+    underTest.tick();
+
+    expectSettings(storage.get(), expectedSettings);
+}
+
+void setFloatTest(const char* settingKey, float newValue, StoredSettings* expectedSettings) {
+    MockSerialAdapter adapter;
+    MockSettingsStorage storage;
+    initToKnownValues(storage.get());
+    SettingsUi underTest(&adapter, &storage);
+    const char* command = "set";
+
+    {
+        InSequence seq;
+        EXPECT_CALL(adapter, isLineReady()).WillOnce(Return(true));
+        EXPECT_CALL(adapter, readWord()).WillOnce(Return(command)).WillOnce(Return(settingKey));
+        EXPECT_CALL(adapter, readFloat()).WillOnce(Return(&newValue));
+        EXPECT_CALL(adapter, skipRestOfLine()).WillOnce(Return(true));
+        EXPECT_CALL(adapter, isLineReady()).WillOnce(Return(false));
+    }
+
+    EXPECT_CALL(storage, save());
+    EXPECT_CALL(adapter, write("OK\n"));
+
+    underTest.tick();
+
+    expectSettings(storage.get(), expectedSettings);
+}
+
+TEST(UpdateSetting, LoggingEnabled) {
+    StoredSettings expectedSettings;
+    initToKnownValues(&expectedSettings);
+    expectedSettings.loggingEnabled = false;
+    setBoolTest("loggingEnabled", false, &expectedSettings);
+}
+
+TEST(UpdateSetting, TickDurationMillis) {
+    StoredSettings expectedSettings;
+    initToKnownValues(&expectedSettings);
+    expectedSettings.tickDurationMillis = 42;
+    setUnsignedLongTest("tickDurationMillis", 42, &expectedSettings);
+}
+
+TEST(UpdateSetting, DebounceMillis) {
+    StoredSettings expectedSettings;
+    initToKnownValues(&expectedSettings);
+    expectedSettings.debounceMillis = 43;
+    setUnsignedLongTest("debounceMillis", 43, &expectedSettings);
+}
+
+TEST(UpdateSetting, TicksBeforeNewLetter) {
+    StoredSettings expectedSettings;
+    initToKnownValues(&expectedSettings);
+    expectedSettings.ticksBeforeNewLetter = 99.99;
+    setFloatTest("ticksBeforeNewLetter", 99.99, &expectedSettings);
+}
+
+TEST(UpdateSetting, TicksBeforeNewWord) {
+    StoredSettings expectedSettings;
+    initToKnownValues(&expectedSettings);
+    expectedSettings.ticksBeforeNewWord = 99.99;
+    setFloatTest("ticksBeforeNewWord", 99.99, &expectedSettings);
+}
+
+TEST(UpdateSetting, TicksBeforeDash) {
+    StoredSettings expectedSettings;
+    initToKnownValues(&expectedSettings);
+    expectedSettings.ticksBeforeDash = 99.99;
+    setFloatTest("ticksBeforeDash", 99.99, &expectedSettings);
+}
+
+TEST(UpdateSetting, TicksBeforeFirstBackspace) {
+    StoredSettings expectedSettings;
+    initToKnownValues(&expectedSettings);
+    expectedSettings.ticksBeforeFirstBackspace = 99.99;
+    setFloatTest("ticksBeforeFirstBackspace", 99.99, &expectedSettings);
+}
+
+TEST(UpdateSetting, TicksBeforeSecondBackspace) {
+    StoredSettings expectedSettings;
+    initToKnownValues(&expectedSettings);
+    expectedSettings.ticksBeforeSecondBackspace = 99.99;
+    setFloatTest("ticksBeforeSecondBackspace", 99.99, &expectedSettings);
+}
+
+TEST(UpdateSetting, TicksBeforeRepeatBackspace) {
+    StoredSettings expectedSettings;
+    initToKnownValues(&expectedSettings);
+    expectedSettings.ticksBeforeRepeatBackspace = 99.99;
+    setFloatTest("ticksBeforeRepeatBackspace", 99.99, &expectedSettings);
+}
+
+TEST(UpdateSetting, ToneVolumePercent) {
+    StoredSettings expectedSettings;
+    initToKnownValues(&expectedSettings);
+    expectedSettings.toneVolumePercent = 100;
+    setUnsignedLongTest("toneVolumePercent", 100, &expectedSettings);
+}
+
+TEST(UpdateSetting, ToneFrequency) {
+    StoredSettings expectedSettings;
+    initToKnownValues(&expectedSettings);
+    expectedSettings.toneFrequency = 1000;
+    setUnsignedLongTest("toneFrequency", 1000, &expectedSettings);
+}

@@ -6,13 +6,14 @@
 namespace {
 // Private variables
 Settings settings;
+SettingsStorage storage;
 }  // namespace
 
 Settings* initSettings() {
-    StoredSettings* storedSettings = initStoredSettings();
+    StoredSettings* storedSettings = storage.get();
 
     // clang-format off
-    settings.loggingEnabled        = true;
+    settings.loggingEnabled        = storedSettings->loggingEnabled;
     settings.tickMillis            = storedSettings->tickDurationMillis;
     settings.debounceMillis        = storedSettings->debounceMillis;
     settings.newLetterMillis       = storedSettings->ticksBeforeNewLetter * settings.tickMillis;

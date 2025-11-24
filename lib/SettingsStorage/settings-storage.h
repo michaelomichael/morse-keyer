@@ -2,4 +2,14 @@
 
 #include "settings-internal.h"
 
-StoredSettings* initStoredSettings();
+class SettingsStorage {
+   public:
+    SettingsStorage();
+
+    inline StoredSettings* get() { return &_settings; }
+    virtual void load();
+    virtual void save();
+
+   private:
+    StoredSettings _settings;
+};
