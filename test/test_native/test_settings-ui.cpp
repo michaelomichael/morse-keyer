@@ -6,24 +6,10 @@
 using ::testing::InSequence;
 using ::testing::Return;
 
-bool SerialAdapter::isLineReady() { return false; }
-const char* SerialAdapter::readWord() { return NULL; }
-const bool* SerialAdapter::readBool() { return NULL; }
-const float* SerialAdapter::readFloat() { return NULL; }
-const unsigned long* SerialAdapter::readUnsignedLong() { return NULL; }
-bool SerialAdapter::skipRestOfLine() { return false; }
-void SerialAdapter::write(const char* str) {}
-void SerialAdapter::writeBool(bool value) {}
-void SerialAdapter::writeFloat(float value) {}
-void SerialAdapter::writeUnsignedLong(unsigned long value) {}
-
-void SettingsStorage::load() {}
-void SettingsStorage::save() {}
-
 class MockSettingsStorage : public SettingsStorage {
    public:
     MockSettingsStorage() : SettingsStorage() {}
-    MOCK_METHOD(void, load, (), (override));
+    MOCK_METHOD(bool, load, (), (override));
     MOCK_METHOD(void, save, (), (override));
 };
 

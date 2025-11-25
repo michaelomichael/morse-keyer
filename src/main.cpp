@@ -21,8 +21,6 @@ enum class Event {
     WordComplete
 };
 
-Settings* settings;
-
 bool isTickOn_m = false;
 unsigned long lastTickTimestamp_m = 0;
 
@@ -32,15 +30,18 @@ unsigned long lastEventTimeMillis_m = 0;
 String sentence_m = String("");
 String morseSymbolsInCurrentLetter_m = String("");
 
+SettingsStorage settingsStorage_m;
+Settings settings_m(&settingsStorage_m);
+
 void setup() {
     Serial.begin(9600);
     pinMode(KEYER_PIN, INPUT_PULLUP);
     pinMode(LED_PIN, OUTPUT);
-    settings = initSettings();
+    settingsStorage_m.load();
 }
 
 void log(const char* text) {
-    if (settings->loggingEnabled) {
+    if (settings_m.getLoggingEnabled()) {
         Serial.println(text);
     }
 }
@@ -51,7 +52,7 @@ void setLastEvent(Event newEvent) {
 }
 
 void logCurrentSentence() {
-    if (settings->loggingEnabled) {
+    if (settings_m.getLoggingEnabled()) {
         Serial.print("Sentence is now: [");
         Serial.print(sentence_m);
         Serial.println("]");
@@ -65,7 +66,7 @@ void sendBackspace() {
     }
 }
 
-void debounce() { delay(settings->debounceMillis); }
+void debounce() { delay(settings_m.getDebounceMillis()); }
 
 void checkKeyerState() {
     int newKeyerState = digitalRead(KEYER_PIN);
@@ -78,14 +79,14 @@ void checkKeyerState() {
 
             setLastEvent(Event::Keydown);
             debounce();
-        } else if (lastEvent_m == Event::Keydown && millisSinceLastEvent > settings->firstBackspaceMillis) {
+        } else if (lastEvent_m == Event::Keydown && millisSinceLastEvent > settings_m.getFirstBackspaceMillis()) {
             log("Initial backspace");
 
             sendBackspace();
             debounce();
             setLastEvent(Event::KeydownFirstBackspaceSent);
         } else if (lastEvent_m == Event::KeydownFirstBackspaceSent &&
-                   millisSinceLastEvent > settings->repeatBackspaceMillis) {
+                   millisSinceLastEvent > settings_m.getRepeatBackspaceMillis()) {
             // TODO - add an intermediate pause check between the first backspace and the repeats,
             //        so we get a chance to release before the repeats kick in, but also can do
             //        fast repeats once they get going.
@@ -97,7 +98,7 @@ void checkKeyerState() {
         if (lastEvent_m == Event::Keydown) {
             log("Keyer released");
 
-            bool isDot = (millisSinceLastEvent < settings->dashMillis);
+            bool isDot = (millisSinceLastEvent < settings_m.getDashMillis());
 
             if (morseSymbolsInCurrentLetter_m.length() > MAX_MORSE_SYMBOLS_PER_LETTER) {
                 log("Too many symbols added for this letter already. Will discard this one.");
@@ -105,7 +106,7 @@ void checkKeyerState() {
                 morseSymbolsInCurrentLetter_m.concat(isDot ? '.' : '-');
             }
 
-            if (settings->loggingEnabled) {
+            if (settings_m.getLoggingEnabled()) {
                 Serial.print("Keyer was pressed for ");
                 Serial.print(millisSinceLastEvent, DEC);
                 Serial.print(" which is a ");
@@ -146,13 +147,13 @@ void tick() {
     unsigned long currentTimestamp = millis();
     unsigned long millisSinceLastEvent = currentTimestamp - lastEventTimeMillis_m;
 
-    if (lastEvent_m == Event::KeyUp && millisSinceLastEvent > settings->newLetterMillis) {
+    if (lastEvent_m == Event::KeyUp && millisSinceLastEvent > settings_m.getNewLetterMillis()) {
         log("New letter");
         char newLetter = getTranslatedLetter();
         appendCharToCurrentSentence(newLetter);
         morseSymbolsInCurrentLetter_m = String("");
         setLastEvent(Event::LetterComplete);
-    } else if (lastEvent_m == Event::LetterComplete && millisSinceLastEvent > settings->newWordMillis) {
+    } else if (lastEvent_m == Event::LetterComplete && millisSinceLastEvent > settings_m.getNewWordMillis()) {
         log("New word");
 
         appendCharToCurrentSentence(' ');
@@ -163,7 +164,7 @@ void tick() {
 void loop() {
     unsigned long currentTimestamp = millis();
 
-    if (currentTimestamp - lastTickTimestamp_m > settings->tickMillis) {
+    if (currentTimestamp - lastTickTimestamp_m > settings_m.getTickMillis()) {
         lastTickTimestamp_m = currentTimestamp;
         tick();
     }
