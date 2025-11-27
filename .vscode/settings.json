@@ -2,6 +2,11 @@
   "cSpell.words": [
     "eeprom",
     "keyer",
-    "PULLUP"
-]
+    "PULLUP",
+    "STREQ"
+],
+"files.associations": {
+    "*.md": "markdown",
+    "new": "cpp"
+}
 }

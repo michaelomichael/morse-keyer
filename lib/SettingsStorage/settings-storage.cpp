@@ -39,6 +39,33 @@ void SettingsStorage::save() {
     this->writeEeprom(address, (uint8_t*)(&(this->_settings)), sizeof(StoredSettings));
 }
 
+void SettingsStorage::print(SerialAdapter* serial) {
+    serial->write("Stored Settings:");
+    serial->write("\n  loggingEnabled: ");
+    serial->writeBool(this->_settings.loggingEnabled);
+    serial->write("\n  tickDurationMillis: ");
+    serial->writeUnsignedLong(this->_settings.tickDurationMillis);
+    serial->write("\n  debounceMillis: ");
+    serial->writeUnsignedLong(this->_settings.debounceMillis);
+    serial->write("\n  ticksBeforeNewLetter: ");
+    serial->writeFloat(this->_settings.ticksBeforeNewLetter);
+    serial->write("\n  ticksBeforeNewWord: ");
+    serial->writeFloat(this->_settings.ticksBeforeNewWord);
+    serial->write("\n  ticksBeforeDash: ");
+    serial->writeFloat(this->_settings.ticksBeforeDash);
+    serial->write("\n  ticksBeforeFirstBackspace: ");
+    serial->writeFloat(this->_settings.ticksBeforeFirstBackspace);
+    serial->write("\n  ticksBeforeSecondBackspace: ");
+    serial->writeFloat(this->_settings.ticksBeforeSecondBackspace);
+    serial->write("\n  ticksBeforeRepeatBackspace: ");
+    serial->writeFloat(this->_settings.ticksBeforeRepeatBackspace);
+    serial->write("\n  toneVolumePercent: ");
+    serial->writeUnsignedLong(this->_settings.toneVolumePercent);
+    serial->write("\n  toneFrequency: ");
+    serial->writeUnsignedLong(this->_settings.toneFrequency);
+    serial->write("\n");
+}
+
 void SettingsStorage::readEeprom(int address, uint8_t* dest, int length) {
     for (int i = 0; i < length; ++i) {
         dest[i] = this->readEeprom(address + i);

@@ -5,18 +5,19 @@
 // #include <stdio.h>  // for size_t
 
 #if defined ARDUINO
-#include <HardwareSerial.h>
-
+// #include <HardwareSerial.h>
+#include <USBAPI.h>
+#define RealSerial Serial_
 #else
-#define HardwareSerial void
-// #define size_t long unsigned int
+// #define HardwareSerial void
+#define RealSerial void
 #endif
 
 #define MAX_READ_BUFFER_SIZE 100
 
 class SerialAdapter {
    public:
-    inline SerialAdapter(HardwareSerial* delegate) { this->delegate = delegate; }
+    inline SerialAdapter(RealSerial* delegate) { this->delegate = delegate; }
 
     /**
      * Returns false until a complete line (ending with \n) is available.
@@ -44,6 +45,14 @@ class SerialAdapter {
     virtual void writeUnsignedLong(unsigned long value);
 
    private:
-    HardwareSerial* delegate;
-    char readBuffer[MAX_READ_BUFFER_SIZE];
+    virtual int read();
+    virtual int available();
+    RealSerial* delegate;
+    char lineBuffer[MAX_READ_BUFFER_SIZE];
+    int lineBufferWritePos = 0;
+    int lineBufferReadPos = 0;
+    char wordBuffer[MAX_READ_BUFFER_SIZE];
+    bool boolBuffer;
+    float floatBuffer;
+    unsigned long unsignedLongBuffer;
 };

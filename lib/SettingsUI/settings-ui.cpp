@@ -1,6 +1,6 @@
 #include "settings-ui.h"
 
-#include <cstring>
+#include <string.h>
 
 namespace {
 const char* COMMAND_LIST = "list";
@@ -100,7 +100,6 @@ void SettingsUi::_handleSetCommand() {
         this->_serial->write("ERR: Unknown setting key '");
         this->_serial->write(settingKey);
         this->_serial->write("'\n");
-        return;
     }
 }
 

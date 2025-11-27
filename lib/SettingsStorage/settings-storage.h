@@ -2,6 +2,7 @@
 
 #include <inttypes.h>
 
+#include "serial-adapter.h"
 #include "settings-internal.h"
 
 class SettingsStorage {
@@ -11,6 +12,7 @@ class SettingsStorage {
     inline StoredSettings* get() { return &_settings; }
     virtual bool load();
     virtual void save();
+    virtual void print(SerialAdapter* serial);
 
    protected:
     virtual void readEeprom(int address, uint8_t* dest, int length);

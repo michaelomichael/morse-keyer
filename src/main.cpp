@@ -3,6 +3,7 @@
 #include <Arduino.h>
 
 #include "morse-tree.h"
+#include "settings-ui.h"
 #include "settings.h"
 
 #define KEYER_PIN 10
@@ -30,15 +31,11 @@ unsigned long lastEventTimeMillis_m = 0;
 String sentence_m = String("");
 String morseSymbolsInCurrentLetter_m = String("");
 
+SerialAdapter serialAdapter(&Serial);
 SettingsStorage settingsStorage_m;
 Settings settings_m(&settingsStorage_m);
 
-void setup() {
-    Serial.begin(9600);
-    pinMode(KEYER_PIN, INPUT_PULLUP);
-    pinMode(LED_PIN, OUTPUT);
-    settingsStorage_m.load();
-}
+SettingsUi settingsUi_m(&serialAdapter, &settingsStorage_m);
 
 void log(const char* text) {
     if (settings_m.getLoggingEnabled()) {
@@ -161,7 +158,21 @@ void tick() {
     }
 }
 
+void setup() {
+    Serial.begin(115200);
+    pinMode(KEYER_PIN, INPUT_PULLUP);
+    pinMode(LED_PIN, OUTPUT);
+    while (!Serial) {
+        ;  // wait for serial port to connect. Needed for native USB
+    }
+    settingsStorage_m.load();
+    settingsStorage_m.print(&serialAdapter);
+
+    log("Initialisation complete!");
+}
+
 void loop() {
+    settingsUi_m.tick();
     unsigned long currentTimestamp = millis();
 
     if (currentTimestamp - lastTickTimestamp_m > settings_m.getTickMillis()) {
