@@ -131,7 +131,7 @@ const unsigned long* SerialAdapter::readUnsignedLong() {
 }
 
 bool SerialAdapter::skipRestOfLine() {
-    bool hadUnreadChars = this->lineBufferReadPos < this->lineBufferWritePos;
+    bool hadUnreadChars = this->lineBufferReadPos < this->lineBufferWritePos - 1;
     this->lineBufferReadPos = 0;
     this->lineBufferWritePos = 0;
     return hadUnreadChars;

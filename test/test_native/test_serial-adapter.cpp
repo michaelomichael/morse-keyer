@@ -134,6 +134,55 @@ TEST(ReadWord, ShouldReturnNullWhenLastCharIsSpace) {
     EXPECT_STREQ(nullptr, underTest.readWord());
 }
 
+TEST(skipRestOfLine, ShouldResetBuffer) {
+    MockSerialAdapter underTest;
+
+    EXPECT_CALL(underTest, available()).Times(4).WillRepeatedly(Return(1));
+    EXPECT_CALL(underTest, read())
+        .Times(4)
+        .WillOnce(Return('a'))
+        .WillOnce(Return('b'))
+        .WillOnce(Return('c'))
+        .WillOnce(Return('\n'));
+
+    EXPECT_EQ(true, underTest.isLineReady());
+    EXPECT_STREQ("abc", underTest.readWord());
+    EXPECT_STREQ(nullptr, underTest.readWord());
+
+    EXPECT_EQ(false, underTest.skipRestOfLine());
+
+    EXPECT_CALL(underTest, available()).Times(4).WillRepeatedly(Return(1));
+    EXPECT_CALL(underTest, read())
+        .Times(4)
+        .WillOnce(Return('d'))
+        .WillOnce(Return('e'))
+        .WillOnce(Return('f'))
+        .WillOnce(Return('\n'));
+
+    EXPECT_EQ(true, underTest.isLineReady());
+    EXPECT_STREQ("def", underTest.readWord());
+    EXPECT_STREQ(nullptr, underTest.readWord());
+}
+
+TEST(skipRestOfLine, ShouldReturnTrueWhenCharsAreSkipped) {
+    MockSerialAdapter underTest;
+
+    EXPECT_CALL(underTest, available()).Times(6).WillRepeatedly(Return(1));
+    EXPECT_CALL(underTest, read())
+        .Times(6)
+        .WillOnce(Return('a'))
+        .WillOnce(Return('b'))
+        .WillOnce(Return(' '))
+        .WillOnce(Return('c'))
+        .WillOnce(Return('d'))
+        .WillOnce(Return('\n'));
+
+    EXPECT_EQ(true, underTest.isLineReady());
+    EXPECT_STREQ("ab", underTest.readWord());
+
+    EXPECT_EQ(true, underTest.skipRestOfLine());
+}
+
 TEST(ReadBool, ShouldReturnNullWhenWordIsNull) {
     MockSerialAdapter underTest;
 
