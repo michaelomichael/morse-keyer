@@ -4,9 +4,9 @@
 #include "settings-internal.h"
 #include "settings-storage.h"
 
-class SettingsUi {
+class SettingsCli {
    public:
-    SettingsUi(SerialAdapter* serial, SettingsStorage* storage);
+    SettingsCli(SerialAdapter* serial, SettingsStorage* storage);
     void tick();
 
    private:

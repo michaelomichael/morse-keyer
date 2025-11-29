@@ -1,7 +1,7 @@
 #include <gmock/gmock.h>
 
 #include "serial-adapter.h"
-#include "settings-ui.h"
+#include "settings-cli.h"
 
 using ::testing::InSequence;
 using ::testing::Return;
@@ -44,7 +44,7 @@ void initToKnownValues(StoredSettings* settings) {
 
 TEST(ListSettingsCommand, ShouldInitializeAndTick) {
     MockSerialAdapter adapter;
-    SettingsUi underTest(&adapter, NULL);
+    SettingsCli underTest(&adapter, NULL);
 
     EXPECT_CALL(adapter, isLineReady()).Times(1).WillRepeatedly(Return(false));
 
@@ -53,7 +53,7 @@ TEST(ListSettingsCommand, ShouldInitializeAndTick) {
 
 TEST(UnknownCommand, ShouldPrintError) {
     MockSerialAdapter adapter;
-    SettingsUi underTest(&adapter, NULL);
+    SettingsCli underTest(&adapter, NULL);
 
     {
         InSequence seq;
@@ -76,7 +76,7 @@ TEST(ListSettings, ShouldPrintSettings) {
     MockSerialAdapter adapter;
     SettingsStorage storage;
     initToKnownValues(storage.get());
-    SettingsUi underTest(&adapter, &storage);
+    SettingsCli underTest(&adapter, &storage);
     const char* command = "list";
 
     {
@@ -163,7 +163,7 @@ TEST(UpdateSetting, UnknownSettingKey) {
     MockSerialAdapter adapter;
     MockSettingsStorage storage;
     initToKnownValues(storage.get());
-    SettingsUi underTest(&adapter, &storage);
+    SettingsCli underTest(&adapter, &storage);
     const char* command = "set";
     const char* settingKey = "unknown_key";
 
@@ -188,7 +188,7 @@ TEST(UpdateSetting, InvalidBoolValue) {
     MockSerialAdapter adapter;
     MockSettingsStorage storage;
     initToKnownValues(storage.get());
-    SettingsUi underTest(&adapter, &storage);
+    SettingsCli underTest(&adapter, &storage);
     const char* command = "set";
     const char* settingKey = "loggingEnabled";
     bool newValue = false;
@@ -214,7 +214,7 @@ TEST(UpdateSetting, InvalidUnsignedLongValue) {
     MockSerialAdapter adapter;
     MockSettingsStorage storage;
     initToKnownValues(storage.get());
-    SettingsUi underTest(&adapter, &storage);
+    SettingsCli underTest(&adapter, &storage);
     const char* command = "set";
     const char* settingKey = "tickDurationMillis";
     unsigned long newValue = 42;
@@ -240,7 +240,7 @@ TEST(UpdateSetting, InvalidFloatValue) {
     MockSerialAdapter adapter;
     MockSettingsStorage storage;
     initToKnownValues(storage.get());
-    SettingsUi underTest(&adapter, &storage);
+    SettingsCli underTest(&adapter, &storage);
     const char* command = "set";
     const char* settingKey = "ticksBeforeNewLetter";
     float newValue = 99.99;
@@ -280,7 +280,7 @@ void setBoolTest(const char* settingKey, bool newValue, StoredSettings* expected
     MockSerialAdapter adapter;
     MockSettingsStorage storage;
     initToKnownValues(storage.get());
-    SettingsUi underTest(&adapter, &storage);
+    SettingsCli underTest(&adapter, &storage);
     const char* command = "set";
 
     {
@@ -304,7 +304,7 @@ void setUnsignedLongTest(const char* settingKey, unsigned long newValue, StoredS
     MockSerialAdapter adapter;
     MockSettingsStorage storage;
     initToKnownValues(storage.get());
-    SettingsUi underTest(&adapter, &storage);
+    SettingsCli underTest(&adapter, &storage);
     const char* command = "set";
 
     {
@@ -328,7 +328,7 @@ void setFloatTest(const char* settingKey, float newValue, StoredSettings* expect
     MockSerialAdapter adapter;
     MockSettingsStorage storage;
     initToKnownValues(storage.get());
-    SettingsUi underTest(&adapter, &storage);
+    SettingsCli underTest(&adapter, &storage);
     const char* command = "set";
 
     {

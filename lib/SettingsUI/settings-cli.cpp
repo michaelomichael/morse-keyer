@@ -1,4 +1,4 @@
-#include "settings-ui.h"
+#include "settings-cli.h"
 
 #include <string.h>
 
@@ -19,12 +19,12 @@ const char* SETTINGS_KEY_TONE_VOLUME_PERCENT = "toneVolumePercent";
 const char* SETTINGS_KEY_TONE_FREQUENCY = "toneFrequency";
 }  // namespace
 
-SettingsUi::SettingsUi(SerialAdapter* serial, SettingsStorage* storage) {
+SettingsCli::SettingsCli(SerialAdapter* serial, SettingsStorage* storage) {
     this->_serial = serial;
     this->_storage = storage;
 }
 
-void SettingsUi::tick() {
+void SettingsCli::tick() {
     while (this->_serial->isLineReady()) {
         const char* command = this->_serial->readWord();
 
@@ -43,7 +43,7 @@ void SettingsUi::tick() {
     }
 }
 
-void SettingsUi::_handleListSettingsCommand() {
+void SettingsCli::_handleListSettingsCommand() {
     this->_serial->write("OK: 11\n");
     this->_outputSetting(SETTINGS_KEY_LOGGING_ENABLED, this->_storage->get()->loggingEnabled);
     this->_outputSetting(SETTINGS_KEY_TICK_DURATION_MILLIS, this->_storage->get()->tickDurationMillis);
@@ -59,7 +59,7 @@ void SettingsUi::_handleListSettingsCommand() {
 }
 
 template <typename T>
-bool SettingsUi::_validateAndSet(const T* (SerialAdapter::*readValueFunc)(), T* dest) {
+bool SettingsCli::_validateAndSet(const T* (SerialAdapter::*readValueFunc)(), T* dest) {
     const T* newValue = (this->_serial->*readValueFunc)();
     if (newValue == nullptr) {
         this->_serial->write("ERR: Invalid value received.\n");
@@ -72,7 +72,7 @@ bool SettingsUi::_validateAndSet(const T* (SerialAdapter::*readValueFunc)(), T* 
     }
 }
 
-void SettingsUi::_handleSetCommand() {
+void SettingsCli::_handleSetCommand() {
     const char* settingKey = this->_serial->readWord();
     if (strcmp(settingKey, SETTINGS_KEY_LOGGING_ENABLED) == 0) {
         this->_validateAndSet(&SerialAdapter::readBool, &(this->_storage->get()->loggingEnabled));
@@ -103,7 +103,7 @@ void SettingsUi::_handleSetCommand() {
     }
 }
 
-void SettingsUi::_outputSetting(const char* key, bool value) {
+void SettingsCli::_outputSetting(const char* key, bool value) {
     this->_serial->write("  ");
     this->_serial->write(key);
     this->_serial->write(" = ");
@@ -111,7 +111,7 @@ void SettingsUi::_outputSetting(const char* key, bool value) {
     this->_serial->write("\n");
 }
 
-void SettingsUi::_outputSetting(const char* key, float value) {
+void SettingsCli::_outputSetting(const char* key, float value) {
     this->_serial->write("  ");
     this->_serial->write(key);
     this->_serial->write(" = ");
@@ -119,7 +119,7 @@ void SettingsUi::_outputSetting(const char* key, float value) {
     this->_serial->write("\n");
 }
 
-void SettingsUi::_outputSetting(const char* key, unsigned long value) {
+void SettingsCli::_outputSetting(const char* key, unsigned long value) {
     this->_serial->write("  ");
     this->_serial->write(key);
     this->_serial->write(" = ");

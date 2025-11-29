@@ -3,7 +3,7 @@
 #include <Arduino.h>
 
 #include "morse-tree.h"
-#include "settings-ui.h"
+#include "settings-cli.h"
 #include "settings.h"
 
 #define KEYER_PIN 10
@@ -35,7 +35,7 @@ SerialAdapter serialAdapter(&Serial);
 SettingsStorage settingsStorage_m;
 Settings settings_m(&settingsStorage_m);
 
-SettingsUi settingsUi_m(&serialAdapter, &settingsStorage_m);
+SettingsCli settingsCli_m(&serialAdapter, &settingsStorage_m);
 
 void log(const char* text) {
     if (settings_m.getLoggingEnabled()) {
@@ -172,7 +172,7 @@ void setup() {
 }
 
 void loop() {
-    settingsUi_m.tick();
+    settingsCli_m.tick();
     unsigned long currentTimestamp = millis();
 
     if (currentTimestamp - lastTickTimestamp_m > settings_m.getTickMillis()) {
