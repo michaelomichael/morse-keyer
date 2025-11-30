@@ -24,6 +24,18 @@ void App::setup(HardwareAdapter* hardwareAdapter, SerialAdapter* serialAdapter, 
         debounce();
     }
 
+    if (settings->getToneEnabled()) {
+        // Emit 2 short beeps to indicate that the tone is enabled
+        const int beepDurationMillis = 300;
+
+        for (int i = 0; i < 2; i++) {
+            hardwareAdapter->tone(settings->getToneFrequencyHertz(), settings->getToneVolumePercent());
+            hardwareAdapter->delay(beepDurationMillis);
+            hardwareAdapter->noTone();
+            hardwareAdapter->delay(beepDurationMillis);
+        }
+    }
+
     log("Initialisation complete!");
     setLastEvent(Event::InitialisationComplete);
 }

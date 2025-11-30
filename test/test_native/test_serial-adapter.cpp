@@ -13,7 +13,6 @@ class MockSerialAdapter : public SerialAdapter {
     MOCK_METHOD(int, read, (), (override));
 };
 
-// TODO: Add tests for some invalid sequences
 TEST(IsLineReady, ShouldReturnFalseIfNothingAvailable) {
     MockSerialAdapter underTest;
 

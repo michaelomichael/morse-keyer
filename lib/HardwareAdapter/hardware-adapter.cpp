@@ -13,7 +13,7 @@ void HardwareAdapter::begin() {
     pinMode(LED_PIN, OUTPUT);
 }
 
-unsigned long HardwareAdapter::millis() { ::millis(); }
+unsigned long HardwareAdapter::millis() { return ::millis(); }
 
 void HardwareAdapter::delay(unsigned long millis) { ::delay(millis); }
 
