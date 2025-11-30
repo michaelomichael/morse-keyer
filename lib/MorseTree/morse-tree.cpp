@@ -6,13 +6,12 @@
 #define DOT createNode
 #define DASH createNode
 
-struct Node {
-    char letter;
-    Node* dot;
-    Node* dash;
-};
+constexpr char MorseTree::Incomplete;
+constexpr char MorseTree::Error;
 
-Node* createNode(char letter, Node* dot, Node* dash) {
+MorseTree::MorseTree(void) {}
+
+MorseTree::Node* MorseTree::createNode(char letter, Node* dot, Node* dash) {
     Node* node = (Node*)malloc(sizeof(Node));
     node->letter = letter;
     node->dot = dot;
@@ -20,12 +19,12 @@ Node* createNode(char letter, Node* dot, Node* dash) {
     return node;
 }
 
-Node* createNode(char letter) { return createNode(letter, NULL, NULL); }
+MorseTree::Node* MorseTree::createNode(char letter) { return createNode(letter, NULL, NULL); }
 
-Node* createMorseTree() {
+MorseTree::Node* MorseTree::createMorseTree() {
     // clang-format off
     return createNode(
-        NONE,
+        Incomplete,
         DOT('e', // .
             DOT('i', // ..
                 DOT('s', // ...
@@ -37,16 +36,16 @@ Node* createMorseTree() {
                         DASH('3'))), // ...--
                 DASH('u', // ..-
                     DOT('f'), // ..-.
-                    DASH(NONE, // ..--
-                        DOT(NONE, // ..--.
+                    DASH(Incomplete, // ..--
+                        DOT(Incomplete, // ..--.
                             DOT('?'), // ..--..
                             NULL),
                         DASH('2')))), // ..---
             DASH('a', // .-
                 DOT('r', // .-.
                     DOT('l'), // .-..
-                    DASH(NONE, // .-.-
-                        DOT(NONE, // .-.-.
+                    DASH(Incomplete, // .-.-
+                        DOT(Incomplete, // .-.-.
                             NULL,
                             DASH('.')), // .-.-.-
                         NULL)),
@@ -67,7 +66,7 @@ Node* createMorseTree() {
                 DASH('k', // -.-,
                     DOT('c', // -.-.
                         NULL,
-                        DASH(NONE, // -.-.-
+                        DASH(Incomplete, // -.-.-
                             NULL,
                             DASH('!'))), // -.-.--
                     DASH('y'))), // -.--
@@ -78,22 +77,20 @@ Node* createMorseTree() {
                         NULL),
                     DASH('q')), // --.-
                 DASH('o', // ---
-                    DOT(NONE, // ---.
+                    DOT(Incomplete, // ---.
                         DOT('8'), // ---..
                         NULL),
-                    DASH(NONE, // ----
+                    DASH(Incomplete, // ----
                         DOT('9'), // ----.
                         DASH('0')))))); // -----
     // clang-format on
 }
 
-Node* _root = createMorseTree();
-
-char getLetterForMorseSymbols(const char* morseSymbols) {
+char MorseTree::getLetterForMorseSymbols(const char* morseSymbols) {
     Node* node = _root;
     for (unsigned int i = 0; i < strlen(morseSymbols); i++) {
         if (node == NULL) {
-            return NONE;
+            return Incomplete;
         }
 
         if (morseSymbols[i] == '.') {
@@ -101,12 +98,12 @@ char getLetterForMorseSymbols(const char* morseSymbols) {
         } else if (morseSymbols[i] == '-') {
             node = node->dash;
         } else {
-            return ERROR;
+            return Error;
         }
     }
 
     if (node == NULL) {
-        return NONE;
+        return Incomplete;
     } else {
         return node->letter;
     }

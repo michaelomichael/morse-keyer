@@ -1,6 +1,7 @@
 #pragma once
 
 #include "hardware-adapter.h"
+#include "morse-tree.h"
 #include "serial-adapter.h"
 #include "settings.h"
 
@@ -22,7 +23,7 @@ class App {
    public:
     /// @brief  Call once at the start of the program
     virtual void setup(HardwareAdapter* hardwareAdapter, SerialAdapter* serialAdapter, Settings* settings,
-                       SettingsStorage* settingsStorage);
+                       SettingsStorage* settingsStorage, MorseTree* morseTree);
 
     /// @brief Should be called as often as possible
     virtual void checkKeyerState();
@@ -42,6 +43,7 @@ class App {
     HardwareAdapter _hardwareAdapter;
     SerialAdapter* _serialAdapter;
     Settings* _settings;
+    MorseTree* _morseTree;
 
     bool _isLedOn = false;
 

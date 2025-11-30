@@ -2,46 +2,60 @@
 
 #include "morse-tree.h"
 
+char runTest(const char* input) {
+    MorseTree underTest;
+    return underTest.getLetterForMorseSymbols(input);
+}
+
+TEST(MorseTree, ShouldReturnErrorIfInvalidSymbolProvided) {
+    EXPECT_EQ(MorseTree::Error, runTest("a"));
+    EXPECT_EQ(MorseTree::Error, runTest(" "));
+    EXPECT_EQ(MorseTree::Error, runTest("!"));
+}
+
+TEST(MorseTree, ShouldReturnNoneIfEmptyStringProvided) { EXPECT_EQ(MorseTree::Incomplete, runTest("")); }
+TEST(MorseTree, ShouldReturnNoneIfIncompleteSequenceProvided) { EXPECT_EQ(MorseTree::Incomplete, runTest("-.-.-")); }
+
 // TODO: Add tests for some invalid sequences
 TEST(MorseTree, ShouldDecodeToCorrectLetter) {
-    EXPECT_EQ('a', getLetterForMorseSymbols(".-"));
-    EXPECT_EQ('b', getLetterForMorseSymbols("-..."));
-    EXPECT_EQ('c', getLetterForMorseSymbols("-.-."));
-    EXPECT_EQ('d', getLetterForMorseSymbols("-.."));
-    EXPECT_EQ('e', getLetterForMorseSymbols("."));
-    EXPECT_EQ('f', getLetterForMorseSymbols("..-."));
-    EXPECT_EQ('g', getLetterForMorseSymbols("--."));
-    EXPECT_EQ('h', getLetterForMorseSymbols("...."));
-    EXPECT_EQ('i', getLetterForMorseSymbols(".."));
-    EXPECT_EQ('j', getLetterForMorseSymbols(".---"));
-    EXPECT_EQ('k', getLetterForMorseSymbols("-.-"));
-    EXPECT_EQ('l', getLetterForMorseSymbols(".-.."));
-    EXPECT_EQ('m', getLetterForMorseSymbols("--"));
-    EXPECT_EQ('n', getLetterForMorseSymbols("-."));
-    EXPECT_EQ('o', getLetterForMorseSymbols("---"));
-    EXPECT_EQ('p', getLetterForMorseSymbols(".--."));
-    EXPECT_EQ('q', getLetterForMorseSymbols("--.-"));
-    EXPECT_EQ('r', getLetterForMorseSymbols(".-."));
-    EXPECT_EQ('s', getLetterForMorseSymbols("..."));
-    EXPECT_EQ('t', getLetterForMorseSymbols("-"));
-    EXPECT_EQ('u', getLetterForMorseSymbols("..-"));
-    EXPECT_EQ('v', getLetterForMorseSymbols("...-"));
-    EXPECT_EQ('w', getLetterForMorseSymbols(".--"));
-    EXPECT_EQ('x', getLetterForMorseSymbols("-..-"));
-    EXPECT_EQ('y', getLetterForMorseSymbols("-.--"));
-    EXPECT_EQ('z', getLetterForMorseSymbols("--.."));
-    EXPECT_EQ('1', getLetterForMorseSymbols(".----"));
-    EXPECT_EQ('2', getLetterForMorseSymbols("..---"));
-    EXPECT_EQ('3', getLetterForMorseSymbols("...--"));
-    EXPECT_EQ('4', getLetterForMorseSymbols("....-"));
-    EXPECT_EQ('5', getLetterForMorseSymbols("....."));
-    EXPECT_EQ('6', getLetterForMorseSymbols("-...."));
-    EXPECT_EQ('7', getLetterForMorseSymbols("--..."));
-    EXPECT_EQ('8', getLetterForMorseSymbols("---.."));
-    EXPECT_EQ('9', getLetterForMorseSymbols("----."));
-    EXPECT_EQ('0', getLetterForMorseSymbols("-----"));
-    EXPECT_EQ('.', getLetterForMorseSymbols(".-.-.-"));
-    EXPECT_EQ('?', getLetterForMorseSymbols("..--.."));
-    EXPECT_EQ('\'', getLetterForMorseSymbols(".----."));
-    EXPECT_EQ('!', getLetterForMorseSymbols("-.-.--"));
+    EXPECT_EQ('a', runTest(".-"));
+    EXPECT_EQ('b', runTest("-..."));
+    EXPECT_EQ('c', runTest("-.-."));
+    EXPECT_EQ('d', runTest("-.."));
+    EXPECT_EQ('e', runTest("."));
+    EXPECT_EQ('f', runTest("..-."));
+    EXPECT_EQ('g', runTest("--."));
+    EXPECT_EQ('h', runTest("...."));
+    EXPECT_EQ('i', runTest(".."));
+    EXPECT_EQ('j', runTest(".---"));
+    EXPECT_EQ('k', runTest("-.-"));
+    EXPECT_EQ('l', runTest(".-.."));
+    EXPECT_EQ('m', runTest("--"));
+    EXPECT_EQ('n', runTest("-."));
+    EXPECT_EQ('o', runTest("---"));
+    EXPECT_EQ('p', runTest(".--."));
+    EXPECT_EQ('q', runTest("--.-"));
+    EXPECT_EQ('r', runTest(".-."));
+    EXPECT_EQ('s', runTest("..."));
+    EXPECT_EQ('t', runTest("-"));
+    EXPECT_EQ('u', runTest("..-"));
+    EXPECT_EQ('v', runTest("...-"));
+    EXPECT_EQ('w', runTest(".--"));
+    EXPECT_EQ('x', runTest("-..-"));
+    EXPECT_EQ('y', runTest("-.--"));
+    EXPECT_EQ('z', runTest("--.."));
+    EXPECT_EQ('1', runTest(".----"));
+    EXPECT_EQ('2', runTest("..---"));
+    EXPECT_EQ('3', runTest("...--"));
+    EXPECT_EQ('4', runTest("....-"));
+    EXPECT_EQ('5', runTest("....."));
+    EXPECT_EQ('6', runTest("-...."));
+    EXPECT_EQ('7', runTest("--..."));
+    EXPECT_EQ('8', runTest("---.."));
+    EXPECT_EQ('9', runTest("----."));
+    EXPECT_EQ('0', runTest("-----"));
+    EXPECT_EQ('.', runTest(".-.-.-"));
+    EXPECT_EQ('?', runTest("..--.."));
+    EXPECT_EQ('\'', runTest(".----."));
+    EXPECT_EQ('!', runTest("-.-.--"));
 }

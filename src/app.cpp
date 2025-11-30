@@ -1,12 +1,11 @@
 #include "app.h"
 
-#include "morse-tree.h"
-
 void App::setup(HardwareAdapter* hardwareAdapter, SerialAdapter* serialAdapter, Settings* settings,
-                SettingsStorage* settingsStorage) {
+                SettingsStorage* settingsStorage, MorseTree* morseTree) {
     hardwareAdapter = hardwareAdapter;
     serialAdapter = serialAdapter;
     settings = settings;
+    _morseTree = morseTree;
 
     if (hardwareAdapter->isKeyerPressed()) {
         StoredSettings* settings = settingsStorage->get();
@@ -154,6 +153,12 @@ void App::appendCharToCurrentSentence(char c) {
 }
 
 char App::getTranslatedLetter() {
-    char letter = getLetterForMorseSymbols(_morseSymbolsInCurrentLetter);
-    return letter == NONE ? '%' : letter;
+    char letter = _morseTree->getLetterForMorseSymbols(_morseSymbolsInCurrentLetter);
+    if (letter == MorseTree::Incomplete) {
+        return '%';
+    } else if (letter == MorseTree::Error) {
+        return '#';
+    } else {
+        return letter;
+    }
 }

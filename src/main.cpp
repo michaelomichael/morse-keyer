@@ -13,6 +13,7 @@ HardwareAdapter _hardwareAdapter;
 SettingsStorage _settingsStorage;
 Settings _settings(&_settingsStorage);
 SettingsCli _settingsCli(&_serialAdapter, &_settingsStorage);
+MorseTree _morseTree;
 App _app;
 
 unsigned long _lastTickTimestamp = 0;
@@ -23,7 +24,7 @@ void setup() {
     _settingsStorage.load();
     _settingsStorage.print(&_serialAdapter);
 
-    _app.setup(&_hardwareAdapter, &_serialAdapter, &_settings, &_settingsStorage);
+    _app.setup(&_hardwareAdapter, &_serialAdapter, &_settings, &_settingsStorage, &_morseTree);
 }
 
 void loop() {
