@@ -5,28 +5,41 @@
 
 #if defined ARDUINO
 
-int SerialAdapter::available() { return this->delegate->available(); }
-int SerialAdapter::read() { return this->delegate->read(); }
+void SerialAdapter::begin() {
+    Serial.begin(115200);
 
-void SerialAdapter::write(const char* str) { this->delegate->print(str); }
+    while (!Serial) {
+        ;  // Wait for the USB CDC serial connection to be established
+    }
+}
 
-void SerialAdapter::writeBool(bool value) { this->delegate->print(value ? "true" : "false"); }
+int SerialAdapter::available() { return this->_delegate->available(); }
+int SerialAdapter::read() { return this->_delegate->read(); }
 
-void SerialAdapter::writeFloat(float value) { this->delegate->print(value); }
+void SerialAdapter::write(const char* str) { this->_delegate->print(str); }
 
-void SerialAdapter::writeUnsignedInt(unsigned int value) { this->delegate->print(value); }
+void SerialAdapter::writeBool(bool value) { this->_delegate->print(value ? "true" : "false"); }
+
+void SerialAdapter::writeFloat(float value) { this->_delegate->print(value); }
+
+void SerialAdapter::writeUnsignedInt(unsigned int value) { this->_delegate->print(value); }
+
+void SerialAdapter::writeUnsignedLong(unsigned long value) { this->_delegate->print(value); }
 
 #else
 #include <string.h>
+void SerialAdapter::begin() {}
 int SerialAdapter::available() { return 0; }
 int SerialAdapter::read() { return -1; };
 void SerialAdapter::write(const char* str) {}
 void SerialAdapter::writeBool(bool value) {}
 void SerialAdapter::writeFloat(float value) {}
 void SerialAdapter::writeUnsignedInt(unsigned int value) {}
+void SerialAdapter::writeUnsignedLong(unsigned long value) {}
 #endif
 
-// TODO: Unit tests
+// TODO - this feels massively over-engineered, can we not just rely on the client sending
+// only complete lines?
 bool SerialAdapter::isLineReady() {
     while (this->available() > 0) {
         int result = this->read();
@@ -35,17 +48,17 @@ bool SerialAdapter::isLineReady() {
         }
 
         if (result == '\n') {
-            this->lineBuffer[lineBufferWritePos++] = '\0';
-            this->lineBufferReadPos = 0;
+            this->_lineBuffer[_lineBufferWritePos++] = '\0';
+            this->_lineBufferReadPos = 0;
             return true;
         }
 
-        if (lineBufferWritePos >= MAX_READ_BUFFER_SIZE - 1) {
+        if (_lineBufferWritePos >= MAX_READ_BUFFER_SIZE - 1) {
             // Buffer overflow; reset buffer
-            lineBufferWritePos = 0;
+            _lineBufferWritePos = 0;
         }
 
-        lineBuffer[lineBufferWritePos++] = (char)result;
+        _lineBuffer[_lineBufferWritePos++] = (char)result;
     }
 
     return false;
@@ -59,26 +72,26 @@ const char* SerialAdapter::readWord() {
          i:    1
          */
     int i = 0;
-    while (lineBufferReadPos < MAX_READ_BUFFER_SIZE - 1) {
-        char c = this->lineBuffer[this->lineBufferReadPos];
+    while (_lineBufferReadPos < MAX_READ_BUFFER_SIZE - 1) {
+        char c = this->_lineBuffer[this->_lineBufferReadPos];
 
         if (c == '\0' || c == '\n') {
             break;
         }
-        lineBufferReadPos++;
+        _lineBufferReadPos++;
 
         if (c == ' ') {
             break;
         }
 
-        this->wordBuffer[i++] = c;
+        this->_wordBuffer[i++] = c;
     }
 
     if (i == 0) {
         return nullptr;
     } else {
-        this->wordBuffer[i] = '\0';
-        return this->wordBuffer;
+        this->_wordBuffer[i] = '\0';
+        return this->_wordBuffer;
     }
 }
 
@@ -87,13 +100,13 @@ const bool* SerialAdapter::readBool() {
     if (word == nullptr) {
         return nullptr;
     } else if (strcasecmp(word, "true") == 0) {
-        this->boolBuffer = true;
+        this->_boolBuffer = true;
     } else if (strcasecmp(word, "false") == 0) {
-        this->boolBuffer = false;
+        this->_boolBuffer = false;
     } else {
         return nullptr;
     }
-    return &this->boolBuffer;
+    return &this->_boolBuffer;
 }
 
 const float* SerialAdapter::readFloat() {
@@ -104,10 +117,10 @@ const float* SerialAdapter::readFloat() {
     }
 
     char* pointerToFinalChar;
-    this->floatBuffer = (float)strtod(word, &pointerToFinalChar);
+    this->_floatBuffer = (float)strtod(word, &pointerToFinalChar);
 
     if (*pointerToFinalChar == '\0') {
-        return &this->floatBuffer;
+        return &this->_floatBuffer;
     } else {
         return nullptr;
     }
@@ -121,18 +134,18 @@ const unsigned int* SerialAdapter::readUnsignedInt() {
     }
 
     char* pointerToFinalChar;
-    this->unsignedIntBuffer = strtoul(word, &pointerToFinalChar, 10);
+    this->_unsignedIntBuffer = strtoul(word, &pointerToFinalChar, 10);
 
-    if (*pointerToFinalChar == '\0' && this->unsignedIntBuffer >= (unsigned int)0) {
-        return &this->unsignedIntBuffer;
+    if (*pointerToFinalChar == '\0' && this->_unsignedIntBuffer >= (unsigned int)0) {
+        return &this->_unsignedIntBuffer;
     } else {
         return nullptr;
     }
 }
 
 bool SerialAdapter::skipRestOfLine() {
-    bool hadUnreadChars = this->lineBufferReadPos < this->lineBufferWritePos - 1;
-    this->lineBufferReadPos = 0;
-    this->lineBufferWritePos = 0;
+    bool hadUnreadChars = this->_lineBufferReadPos < this->_lineBufferWritePos - 1;
+    this->_lineBufferReadPos = 0;
+    this->_lineBufferWritePos = 0;
     return hadUnreadChars;
 }

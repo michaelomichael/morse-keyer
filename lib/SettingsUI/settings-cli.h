@@ -13,12 +13,12 @@ class SettingsCli {
     SerialAdapter* _serial;
     SettingsStorage* _storage;
 
-    void _handleListCommand();
-    void _handleSetCommand();
-    void _outputSetting(const char* key, bool value);
-    void _outputSetting(const char* key, unsigned int value);
-    void _outputSetting(const char* key, float value);
+    void handleListCommand();
+    void handleSetCommand();
+    void outputSetting(const char* key, bool value);
+    void outputSetting(const char* key, unsigned int value);
+    void outputSetting(const char* key, float value);
 
     template <typename T>
-    bool _validateAndSet(const T* (SerialAdapter::*readValueFunc)(), T* dest);
+    bool validateAndSet(const T* (SerialAdapter::*readValueFunc)(), T* dest);
 };

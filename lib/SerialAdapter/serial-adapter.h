@@ -17,7 +17,9 @@
 
 class SerialAdapter {
    public:
-    inline SerialAdapter(RealSerial* delegate) { this->delegate = delegate; }
+    inline SerialAdapter(RealSerial* delegate) { this->_delegate = delegate; }
+
+    virtual void begin();
 
     /**
      * Returns false until a complete line (ending with \n) is available.
@@ -43,16 +45,17 @@ class SerialAdapter {
     virtual void writeBool(bool value);
     virtual void writeFloat(float value);
     virtual void writeUnsignedInt(unsigned int value);
+    virtual void writeUnsignedLong(unsigned long value);
 
    private:
     virtual int read();
     virtual int available();
-    RealSerial* delegate;
-    char lineBuffer[MAX_READ_BUFFER_SIZE];
-    int lineBufferWritePos = 0;
-    int lineBufferReadPos = 0;
-    char wordBuffer[MAX_READ_BUFFER_SIZE];
-    bool boolBuffer;
-    float floatBuffer;
-    unsigned int unsignedIntBuffer;
+    RealSerial* _delegate;
+    char _lineBuffer[MAX_READ_BUFFER_SIZE];
+    int _lineBufferWritePos = 0;
+    int _lineBufferReadPos = 0;
+    char _wordBuffer[MAX_READ_BUFFER_SIZE];
+    bool _boolBuffer;
+    float _floatBuffer;
+    unsigned int _unsignedIntBuffer;
 };

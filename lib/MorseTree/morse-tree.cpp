@@ -87,10 +87,10 @@ Node* createMorseTree() {
     // clang-format on
 }
 
-Node* root = createMorseTree();
+Node* _root = createMorseTree();
 
 char getLetterForMorseSymbols(const char* morseSymbols) {
-    Node* node = root;
+    Node* node = _root;
     for (unsigned int i = 0; i < strlen(morseSymbols); i++) {
         if (node == NULL) {
             return NONE;
