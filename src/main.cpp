@@ -21,7 +21,9 @@ unsigned long _lastTickTimestamp = 0;
 void setup() {
     _serialAdapter.begin();
     _hardwareAdapter.begin();
-    _settingsStorage.load();
+    if (!_settingsStorage.load()) {
+        _serialAdapter.write("!! Failed to load settings from storage\n");
+    };
     _settingsStorage.print(&_serialAdapter);
 
     _app.setup(&_hardwareAdapter, &_serialAdapter, &_settings, &_settingsStorage, &_morseTree);

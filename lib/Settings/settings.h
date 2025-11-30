@@ -2,6 +2,7 @@
 
 #include "settings-storage.h"
 
+/// @brief A wrapper around the StoredSettings, translating ticks into milliseconds.
 class Settings {
    public:
     inline Settings(SettingsStorage* storage) { this->_storage = storage; }

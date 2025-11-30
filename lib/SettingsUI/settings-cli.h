@@ -4,6 +4,7 @@
 #include "settings-internal.h"
 #include "settings-storage.h"
 
+/// @brief Handles getting and setting of configuration values via the serial interface.
 class SettingsCli {
    public:
     SettingsCli(SerialAdapter* serial, SettingsStorage* storage);

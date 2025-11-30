@@ -1,7 +1,6 @@
 #pragma once
 
-enum class KeyerState { Pressed, Released };
-
+// Provides an abstraction around Arduino-specific functions, so that we can mock them in tests.
 class HardwareAdapter {
    public:
     virtual void begin();
@@ -9,7 +8,8 @@ class HardwareAdapter {
     virtual void delay(unsigned long millis);
     virtual bool isKeyerPressed();
     virtual void writeLed(bool state);
-    // virtual void keyboardPrint(char c);
+    virtual void keyboardType(char c);
+    virtual void keyboardBackspace();
     virtual void tone(unsigned int frequencyHertz, unsigned int volumePercent);
     virtual void noTone();
 };

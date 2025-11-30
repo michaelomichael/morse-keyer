@@ -1,5 +1,6 @@
 #pragma once
 
+/// @brief Handles mapping a sequence of dots and dashes into an alphanumeric character.
 class MorseTree {
    public:
     static constexpr char Incomplete = 0;

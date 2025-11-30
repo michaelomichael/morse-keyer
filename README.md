@@ -62,18 +62,18 @@ Settings are:
 |------------------------------|---------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------|
 | `loggingEnabled`             | Boolean | Whether to print debug messages on the serial port                                                                                                                            | true          |
 | `tickDurationMillis`         | Integer | Number of milliseconds that constitute a "tick" unit for the various timing parameters below. Use this as an overall "speed" control.                                         | 70            |
-| `debounceMillis`             | Integer | Number of milliseconds to wait for the button state to [settle](https://en.wikipedia.org/wiki/Switch#Contact_bounce) each time it is pressed or released.                                                                                | 10            |
+| `debounceMillis`             | Integer | Number of milliseconds to wait for the button state to [settle](https://en.wikipedia.org/wiki/Switch#Contact_bounce) each time it is pressed or released.                                                                                | 50            |
 | `ticksBeforeNewLetter`       | Float   | Number of ticks to wait after the last 'release' before deciding to move to interpret the morse captured so far and type the resulting letter on the keyboard.                | 7             |
 | `ticksBeforeNewWord`         | Float   | Number of ticks to wait after we moved to a new letter before deciding to type a space character.                                                                             | 8             |
 | `ticksBeforeDash`            | Float   | Minimum duration (in ticks) that the button needs to remain pressed in order to constitute a "dash" rather than a "dot".                                                      | 2.5           |
 | `ticksBeforeFirstBackspace`  | Float   | Minimum duration (in ticks) that the button needs to remain pressed in order to type a "backspace".                                                                           | 20            |
 | `ticksBeforeSecondBackspace` | Float   | Amount of time (in ticks) that the button needs to remain pressed in order to type a second "backspace", measured from the time that the first "backspace" was typed.         | 13            |
-| `ticksBeforeRepeatBackspace` | Float   | Amount of time (in ticks) that the button needs to remain pressed in order to type each subsequent "backspace", measured from the time that the second "backspace" was typed. | 7             |
+| `ticksBeforeRepeatBackspace` | Float   | Amount of time (in ticks) that the button needs to remain pressed in order to type each subsequent "backspace", measured from the time that the second "backspace" was typed. | 4             |
 | `toneEnabled`                | Boolean | Turns the speaker on or off (if connected).                                                                                                                                   | true          |
 | `toneVolumePercent`          | Integer | Maximum volume of the tone played by the speaker. (Not currently used.)                                                                                                       | 50            |
 | `toneFrequencyHertz`         | Integer | Frequency of the tone played by the speaker.                                                                                                                                  | 440           |
 
-You can send the following commands using the PlatformIO/Arduino serial monitor(rate: 115,200 baud, line ending: Newline `\n`) to configure the various settings.
+You can configure these settings by sending the following commands using the PlatformIO/Arduino serial monitor, with rate=115,200 baud and line ending=linefeed (`\n`).
 
 Changes should take effect immediately, and are stored in the device's EEPROM so they will persist when the power is switched off.
 

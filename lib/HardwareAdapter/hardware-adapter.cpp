@@ -3,6 +3,7 @@
 #ifdef ARDUINO
 
 #include <Arduino.h>
+#include <Keyboard.h>
 
 #define KEYER_PIN 10
 #define SPEAKER_PIN 9
@@ -11,6 +12,7 @@
 void HardwareAdapter::begin() {
     pinMode(KEYER_PIN, INPUT_PULLUP);
     pinMode(LED_PIN, OUTPUT);
+    Keyboard.begin();
 }
 
 unsigned long HardwareAdapter::millis() { return ::millis(); }
@@ -21,7 +23,11 @@ bool HardwareAdapter::isKeyerPressed() { return digitalRead(KEYER_PIN) == LOW; }
 
 void HardwareAdapter::writeLed(bool state) { analogWrite(LED_PIN, state ? 20 : 0); }
 
-// void HardwareAdapter::keyboardPrint(char c) { }
+void HardwareAdapter::keyboardType(char c) { Keyboard.print(c); };
+
+void HardwareAdapter::keyboardBackspace() {
+    Keyboard.print((char)0x08);  // ^H
+};
 
 void HardwareAdapter::tone(unsigned int frequencyHertz, unsigned int volumePercent) {
     ::tone(SPEAKER_PIN, frequencyHertz);
@@ -35,7 +41,8 @@ unsigned long HardwareAdapter::millis() { return 0; }
 void HardwareAdapter::delay(unsigned long millis) {}
 bool HardwareAdapter::isKeyerPressed() { return false; }
 void HardwareAdapter::writeLed(bool state) {}
-// void HardwareAdapter::keyboardPrint(char c) {}
+void HardwareAdapter::keyboardType(char c) {};
+void HardwareAdapter::keyboardBackspace() {};
 void HardwareAdapter::tone(unsigned int frequencyHertz, unsigned int volumePercent) {}
 void HardwareAdapter::noTone() {}
 #endif

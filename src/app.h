@@ -40,7 +40,7 @@ class App {
     void log(const char* text);
     void logCurrentSentence();
 
-    HardwareAdapter _hardwareAdapter;
+    HardwareAdapter* _hardwareAdapter;
     SerialAdapter* _serialAdapter;
     Settings* _settings;
     MorseTree* _morseTree;

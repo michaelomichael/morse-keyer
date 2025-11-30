@@ -2,12 +2,12 @@
 
 void App::setup(HardwareAdapter* hardwareAdapter, SerialAdapter* serialAdapter, Settings* settings,
                 SettingsStorage* settingsStorage, MorseTree* morseTree) {
-    hardwareAdapter = hardwareAdapter;
-    serialAdapter = serialAdapter;
-    settings = settings;
+    _hardwareAdapter = hardwareAdapter;
+    _serialAdapter = serialAdapter;
+    _settings = settings;
     _morseTree = morseTree;
 
-    if (hardwareAdapter->isKeyerPressed()) {
+    if (_hardwareAdapter->isKeyerPressed()) {
         StoredSettings* settings = settingsStorage->get();
 
         if (settings->toneEnabled) {
@@ -20,7 +20,7 @@ void App::setup(HardwareAdapter* hardwareAdapter, SerialAdapter* serialAdapter, 
         settingsStorage->save();
 
         log("Waiting for keyer to be released before continuing");
-        while (hardwareAdapter->isKeyerPressed());
+        while (_hardwareAdapter->isKeyerPressed());
         debounce();
     }
 
@@ -29,10 +29,10 @@ void App::setup(HardwareAdapter* hardwareAdapter, SerialAdapter* serialAdapter, 
         const int beepDurationMillis = 300;
 
         for (int i = 0; i < 2; i++) {
-            hardwareAdapter->tone(settings->getToneFrequencyHertz(), settings->getToneVolumePercent());
-            hardwareAdapter->delay(beepDurationMillis);
-            hardwareAdapter->noTone();
-            hardwareAdapter->delay(beepDurationMillis);
+            _hardwareAdapter->tone(settings->getToneFrequencyHertz(), settings->getToneVolumePercent());
+            _hardwareAdapter->delay(beepDurationMillis);
+            _hardwareAdapter->noTone();
+            _hardwareAdapter->delay(beepDurationMillis);
         }
     }
 
@@ -41,10 +41,10 @@ void App::setup(HardwareAdapter* hardwareAdapter, SerialAdapter* serialAdapter, 
 }
 
 void App::tick() {
-    _hardwareAdapter.writeLed(_isLedOn);
+    _hardwareAdapter->writeLed(_isLedOn);
     _isLedOn = !_isLedOn;
 
-    unsigned long currentTimestamp = _hardwareAdapter.millis();
+    unsigned long currentTimestamp = _hardwareAdapter->millis();
     unsigned long millisSinceLastEvent = currentTimestamp - _lastEventTimeMillis;
 
     if (_lastEvent == Event::KeyUp && millisSinceLastEvent > _settings->getNewLetterMillis()) {
@@ -87,25 +87,27 @@ void App::sendBackspace() {
         _sentence[len - 1] = '\0';
         logCurrentSentence();
     }
+
+    _hardwareAdapter->keyboardBackspace();
 }
 
-void App::debounce() { _hardwareAdapter.delay(_settings->getDebounceMillis()); }
+void App::debounce() { _hardwareAdapter->delay(_settings->getDebounceMillis()); }
 
 void App::checkKeyerState() {
-    unsigned long millisSinceLastEvent = _hardwareAdapter.millis() - _lastEventTimeMillis;
+    unsigned long millisSinceLastEvent = _hardwareAdapter->millis() - _lastEventTimeMillis;
 
-    if (_hardwareAdapter.isKeyerPressed()) {
+    if (_hardwareAdapter->isKeyerPressed()) {
         if (_lastEvent == Event::KeyUp || _lastEvent == Event::LetterComplete || _lastEvent == Event::WordComplete ||
             _lastEvent == Event::InitialisationComplete) {
             log("Keyer pressed");
 
-            _hardwareAdapter.tone(_settings->getToneFrequencyHertz(), _settings->getToneVolumePercent());
+            _hardwareAdapter->tone(_settings->getToneFrequencyHertz(), _settings->getToneVolumePercent());
 
             setLastEvent(Event::Keydown);
             debounce();
         } else if (_lastEvent == Event::Keydown && millisSinceLastEvent > _settings->getFirstBackspaceMillis()) {
             log("Initial backspace");
-            _hardwareAdapter.noTone();
+            _hardwareAdapter->noTone();
             sendBackspace();
             debounce();
             setLastEvent(Event::KeydownFirstBackspaceSent);
@@ -121,7 +123,7 @@ void App::checkKeyerState() {
     } else {
         if (_lastEvent == Event::Keydown) {
             log("Keyer released");
-            _hardwareAdapter.noTone();
+            _hardwareAdapter->noTone();
 
             bool isDot = (millisSinceLastEvent < _settings->getDashMillis());
 
@@ -162,6 +164,8 @@ void App::appendCharToCurrentSentence(char c) {
     _sentence[len] = c;
     _sentence[len + 1] = '\0';
     logCurrentSentence();
+
+    _hardwareAdapter->keyboardType(c);
 }
 
 char App::getTranslatedLetter() {

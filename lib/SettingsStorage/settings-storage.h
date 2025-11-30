@@ -5,6 +5,7 @@
 #include "serial-adapter.h"
 #include "settings-internal.h"
 
+/// @brief Responsible for saving and retrieving settings from EEPROM.
 class SettingsStorage {
    public:
     inline SettingsStorage() {}

@@ -15,6 +15,7 @@
 
 #define MAX_READ_BUFFER_SIZE 100
 
+/// @brief A wrapper around Arduino's HardwareSerial. It's useful for mocking in tests and has more robust parsing.
 class SerialAdapter {
    public:
     inline SerialAdapter(RealSerial* delegate) { this->_delegate = delegate; }
