@@ -61,8 +61,8 @@ void SettingsStorage::print(SerialAdapter* serial) {
     serial->writeFloat(this->_settings.ticksBeforeRepeatBackspace);
     serial->write("\n  toneVolumePercent: ");
     serial->writeUnsignedLong(this->_settings.toneVolumePercent);
-    serial->write("\n  toneFrequency: ");
-    serial->writeUnsignedLong(this->_settings.toneFrequency);
+    serial->write("\n  toneFrequencyHertz: ");
+    serial->writeUnsignedLong(this->_settings.toneFrequencyHertz);
     serial->write("\n");
 }
 

@@ -10,6 +10,7 @@ struct StoredSettings {
     float ticksBeforeFirstBackspace = 20;
     float ticksBeforeSecondBackspace = 13;
     float ticksBeforeRepeatBackspace = 7;
+    bool toneEnabled = true;
     unsigned long toneVolumePercent = 50;
-    unsigned long toneFrequency = 440;
+    unsigned long toneFrequencyHertz = 440;
 };

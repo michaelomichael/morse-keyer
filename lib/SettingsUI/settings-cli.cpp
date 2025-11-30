@@ -15,8 +15,9 @@ const char* SETTINGS_KEY_TICKS_BEFORE_DASH = "ticksBeforeDash";
 const char* SETTINGS_KEY_TICKS_BEFORE_FIRST_BACKSPACE = "ticksBeforeFirstBackspace";
 const char* SETTINGS_KEY_TICKS_BEFORE_SECOND_BACKSPACE = "ticksBeforeSecondBackspace";
 const char* SETTINGS_KEY_TICKS_BEFORE_REPEAT_BACKSPACE = "ticksBeforeRepeatBackspace";
+const char* SETTINGS_KEY_TONE_ENABLED = "toneEnabled";
 const char* SETTINGS_KEY_TONE_VOLUME_PERCENT = "toneVolumePercent";
-const char* SETTINGS_KEY_TONE_FREQUENCY = "toneFrequency";
+const char* SETTINGS_KEY_TONE_FREQUENCY_HERTZ = "toneFrequencyHertz";
 }  // namespace
 
 SettingsCli::SettingsCli(SerialAdapter* serial, SettingsStorage* storage) {
@@ -31,7 +32,7 @@ void SettingsCli::tick() {
         if (command == nullptr) {
             this->_serial->write("ERR: Empty command.\n");
         } else if (strcmp(command, COMMAND_LIST) == 0) {
-            this->_handleListSettingsCommand();
+            this->_handleListCommand();
         } else if (strcmp(command, COMMAND_SET) == 0) {
             this->_handleSetCommand();
         } else {
@@ -43,8 +44,8 @@ void SettingsCli::tick() {
     }
 }
 
-void SettingsCli::_handleListSettingsCommand() {
-    this->_serial->write("OK: 11\n");
+void SettingsCli::_handleListCommand() {
+    this->_serial->write("OK: 12\n");
     this->_outputSetting(SETTINGS_KEY_LOGGING_ENABLED, this->_storage->get()->loggingEnabled);
     this->_outputSetting(SETTINGS_KEY_TICK_DURATION_MILLIS, this->_storage->get()->tickDurationMillis);
     this->_outputSetting(SETTINGS_KEY_DEBOUNCE_MILLIS, this->_storage->get()->debounceMillis);
@@ -54,8 +55,9 @@ void SettingsCli::_handleListSettingsCommand() {
     this->_outputSetting(SETTINGS_KEY_TICKS_BEFORE_FIRST_BACKSPACE, this->_storage->get()->ticksBeforeFirstBackspace);
     this->_outputSetting(SETTINGS_KEY_TICKS_BEFORE_SECOND_BACKSPACE, this->_storage->get()->ticksBeforeSecondBackspace);
     this->_outputSetting(SETTINGS_KEY_TICKS_BEFORE_REPEAT_BACKSPACE, this->_storage->get()->ticksBeforeRepeatBackspace);
+    this->_outputSetting(SETTINGS_KEY_TONE_ENABLED, this->_storage->get()->toneEnabled);
     this->_outputSetting(SETTINGS_KEY_TONE_VOLUME_PERCENT, this->_storage->get()->toneVolumePercent);
-    this->_outputSetting(SETTINGS_KEY_TONE_FREQUENCY, this->_storage->get()->toneFrequency);
+    this->_outputSetting(SETTINGS_KEY_TONE_FREQUENCY_HERTZ, this->_storage->get()->toneFrequencyHertz);
 }
 
 template <typename T>
@@ -92,10 +94,12 @@ void SettingsCli::_handleSetCommand() {
         this->_validateAndSet(&SerialAdapter::readFloat, &(this->_storage->get()->ticksBeforeSecondBackspace));
     } else if (strcmp(settingKey, SETTINGS_KEY_TICKS_BEFORE_REPEAT_BACKSPACE) == 0) {
         this->_validateAndSet(&SerialAdapter::readFloat, &(this->_storage->get()->ticksBeforeRepeatBackspace));
+    } else if (strcmp(settingKey, SETTINGS_KEY_TONE_ENABLED) == 0) {
+        this->_validateAndSet(&SerialAdapter::readBool, &(this->_storage->get()->toneEnabled));
     } else if (strcmp(settingKey, SETTINGS_KEY_TONE_VOLUME_PERCENT) == 0) {
         this->_validateAndSet(&SerialAdapter::readUnsignedLong, &(this->_storage->get()->toneVolumePercent));
-    } else if (strcmp(settingKey, SETTINGS_KEY_TONE_FREQUENCY) == 0) {
-        this->_validateAndSet(&SerialAdapter::readUnsignedLong, &(this->_storage->get()->toneFrequency));
+    } else if (strcmp(settingKey, SETTINGS_KEY_TONE_FREQUENCY_HERTZ) == 0) {
+        this->_validateAndSet(&SerialAdapter::readUnsignedLong, &(this->_storage->get()->toneFrequencyHertz));
     } else {
         this->_serial->write("ERR: Unknown setting key '");
         this->_serial->write(settingKey);

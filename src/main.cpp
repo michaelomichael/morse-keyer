@@ -7,6 +7,7 @@
 #include "settings.h"
 
 #define KEYER_PIN 10
+#define SPEAKER_PIN 9
 #define LED_PIN LED_BUILTIN
 #define MAX_SENTENCE_CHARS 100
 #define MAX_MORSE_SYMBOLS_PER_LETTER 10
@@ -14,6 +15,8 @@
 #define RELEASED HIGH
 
 enum class Event {
+    InitialisationStarted,
+    InitialisationComplete,
     Keydown,
     KeydownFirstBackspaceSent,
     KeydownSecondBackspaceSent,
@@ -25,8 +28,8 @@ enum class Event {
 bool isTickOn_m = false;
 unsigned long lastTickTimestamp_m = 0;
 
-Event lastEvent_m = Event::WordComplete;
-unsigned long lastEventTimeMillis_m = 0;
+Event lastEvent_m = Event::InitialisationStarted;
+unsigned long lastEventTimeMillis_m = millis();
 
 String sentence_m = String("");
 String morseSymbolsInCurrentLetter_m = String("");
@@ -71,14 +74,17 @@ void checkKeyerState() {
     unsigned long millisSinceLastEvent = millis() - lastEventTimeMillis_m;
 
     if (newKeyerState == PRESSED) {
-        if (lastEvent_m == Event::KeyUp || lastEvent_m == Event::LetterComplete || lastEvent_m == Event::WordComplete) {
+        if (lastEvent_m == Event::KeyUp || lastEvent_m == Event::LetterComplete || lastEvent_m == Event::WordComplete ||
+            lastEvent_m == Event::InitialisationComplete) {
             log("Keyer pressed");
+
+            tone(SPEAKER_PIN, settings_m.getToneFrequencyHertz());
 
             setLastEvent(Event::Keydown);
             debounce();
         } else if (lastEvent_m == Event::Keydown && millisSinceLastEvent > settings_m.getFirstBackspaceMillis()) {
             log("Initial backspace");
-
+            noTone(SPEAKER_PIN);
             sendBackspace();
             debounce();
             setLastEvent(Event::KeydownFirstBackspaceSent);
@@ -94,6 +100,7 @@ void checkKeyerState() {
     } else {
         if (lastEvent_m == Event::Keydown) {
             log("Keyer released");
+            noTone(SPEAKER_PIN);
 
             bool isDot = (millisSinceLastEvent < settings_m.getDashMillis());
 
@@ -168,7 +175,25 @@ void setup() {
     settingsStorage_m.load();
     settingsStorage_m.print(&serialAdapter);
 
+    if (digitalRead(KEYER_PIN) == PRESSED) {
+        StoredSettings* settings = settingsStorage_m.get();
+
+        if (settings->toneEnabled) {
+            log("Toggling the tone volume to OFF");
+            settings->toneEnabled = false;
+        } else {
+            log("Toggling the tone volume to ON");
+            settings->toneEnabled = true;
+        }
+        settingsStorage_m.save();
+
+        log("Waiting for keyer to be released before continuing");
+        while (digitalRead(KEYER_PIN) == PRESSED);
+        debounce();
+    }
+
     log("Initialisation complete!");
+    setLastEvent(Event::InitialisationComplete);
 }
 
 void loop() {

@@ -38,8 +38,9 @@ void initToKnownValues(StoredSettings* settings) {
     settings->ticksBeforeFirstBackspace = 20.0;
     settings->ticksBeforeSecondBackspace = 13.0;
     settings->ticksBeforeRepeatBackspace = 7.0;
+    settings->toneEnabled = true;
     settings->toneVolumePercent = 50;
-    settings->toneFrequency = 440;
+    settings->toneFrequencyHertz = 440;
 }
 
 TEST(ListSettingsCommand, ShouldInitializeAndTick) {
@@ -88,7 +89,7 @@ TEST(ListSettings, ShouldPrintSettings) {
     }
     {
         InSequence seq;
-        EXPECT_CALL(adapter, write("OK: 11\n"));
+        EXPECT_CALL(adapter, write("OK: 12\n"));
 
         EXPECT_CALL(adapter, write("  "));
         EXPECT_CALL(adapter, write("loggingEnabled"));
@@ -145,13 +146,19 @@ TEST(ListSettings, ShouldPrintSettings) {
         EXPECT_CALL(adapter, write("\n"));
 
         EXPECT_CALL(adapter, write("  "));
+        EXPECT_CALL(adapter, write("toneEnabled"));
+        EXPECT_CALL(adapter, write(" = "));
+        EXPECT_CALL(adapter, writeBool(true));
+        EXPECT_CALL(adapter, write("\n"));
+
+        EXPECT_CALL(adapter, write("  "));
         EXPECT_CALL(adapter, write("toneVolumePercent"));
         EXPECT_CALL(adapter, write(" = "));
         EXPECT_CALL(adapter, writeUnsignedLong(50));
         EXPECT_CALL(adapter, write("\n"));
 
         EXPECT_CALL(adapter, write("  "));
-        EXPECT_CALL(adapter, write("toneFrequency"));
+        EXPECT_CALL(adapter, write("toneFrequencyHertz"));
         EXPECT_CALL(adapter, write(" = "));
         EXPECT_CALL(adapter, writeUnsignedLong(440));
         EXPECT_CALL(adapter, write("\n"));
@@ -272,8 +279,9 @@ void expectSettings(StoredSettings* actual, StoredSettings* expected) {
     EXPECT_EQ(actual->ticksBeforeFirstBackspace, expected->ticksBeforeFirstBackspace);
     EXPECT_EQ(actual->ticksBeforeSecondBackspace, expected->ticksBeforeSecondBackspace);
     EXPECT_EQ(actual->ticksBeforeRepeatBackspace, expected->ticksBeforeRepeatBackspace);
+    EXPECT_EQ(actual->toneEnabled, expected->toneEnabled);
     EXPECT_EQ(actual->toneVolumePercent, expected->toneVolumePercent);
-    EXPECT_EQ(actual->toneFrequency, expected->toneFrequency);
+    EXPECT_EQ(actual->toneFrequencyHertz, expected->toneFrequencyHertz);
 }
 
 void setBoolTest(const char* settingKey, bool newValue, StoredSettings* expectedSettings) {
@@ -411,6 +419,13 @@ TEST(UpdateSetting, TicksBeforeRepeatBackspace) {
     setFloatTest("ticksBeforeRepeatBackspace", 99.99, &expectedSettings);
 }
 
+TEST(UpdateSetting, ToneEnabled) {
+    StoredSettings expectedSettings;
+    initToKnownValues(&expectedSettings);
+    expectedSettings.toneEnabled = false;
+    setBoolTest("toneEnabled", false, &expectedSettings);
+}
+
 TEST(UpdateSetting, ToneVolumePercent) {
     StoredSettings expectedSettings;
     initToKnownValues(&expectedSettings);
@@ -418,9 +433,9 @@ TEST(UpdateSetting, ToneVolumePercent) {
     setUnsignedLongTest("toneVolumePercent", 100, &expectedSettings);
 }
 
-TEST(UpdateSetting, ToneFrequency) {
+TEST(UpdateSetting, ToneFrequencyHertz) {
     StoredSettings expectedSettings;
     initToKnownValues(&expectedSettings);
-    expectedSettings.toneFrequency = 1000;
-    setUnsignedLongTest("toneFrequency", 1000, &expectedSettings);
+    expectedSettings.toneFrequencyHertz = 1000;
+    setUnsignedLongTest("toneFrequencyHertz", 1000, &expectedSettings);
 }

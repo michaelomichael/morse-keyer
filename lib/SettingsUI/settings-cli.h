@@ -13,7 +13,7 @@ class SettingsCli {
     SerialAdapter* _serial;
     SettingsStorage* _storage;
 
-    void _handleListSettingsCommand();
+    void _handleListCommand();
     void _handleSetCommand();
     void _outputSetting(const char* key, bool value);
     void _outputSetting(const char* key, unsigned long value);

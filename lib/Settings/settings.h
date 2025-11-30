@@ -31,6 +31,10 @@ class Settings {
         return this->getTickMillis() * _storage->get()->ticksBeforeRepeatBackspace;
     }
 
+    inline bool getToneEnabled() const { return _storage->get()->toneEnabled; }
+    inline unsigned long getToneVolumePercent() const { return _storage->get()->toneVolumePercent; }
+    inline unsigned long getToneFrequencyHertz() const { return _storage->get()->toneFrequencyHertz; }
+
    private:
     SettingsStorage* _storage;
 };
