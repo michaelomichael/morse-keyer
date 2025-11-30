@@ -88,7 +88,9 @@ void App::sendBackspace() {
         logCurrentSentence();
     }
 
-    _hardwareAdapter->keyboardBackspace();
+    if (_settings->getKeyboardEnabled()) {
+        _hardwareAdapter->keyboardBackspace();
+    }
 }
 
 void App::debounce() { _hardwareAdapter->delay(_settings->getDebounceMillis()); }
@@ -101,7 +103,9 @@ void App::checkKeyerState() {
             _lastEvent == Event::InitialisationComplete) {
             log("Keyer pressed");
 
-            _hardwareAdapter->tone(_settings->getToneFrequencyHertz(), _settings->getToneVolumePercent());
+            if (_settings->getToneEnabled()) {
+                _hardwareAdapter->tone(_settings->getToneFrequencyHertz(), _settings->getToneVolumePercent());
+            }
 
             setLastEvent(Event::Keydown);
             debounce();
@@ -165,7 +169,10 @@ void App::appendCharToCurrentSentence(char c) {
     _sentence[len + 1] = '\0';
     logCurrentSentence();
 
-    _hardwareAdapter->keyboardType(c);
+    if (_settings->getKeyboardEnabled()) {
+        char mappedChar = _settings->getKeyboardLayout()->remap(c);
+        _hardwareAdapter->keyboardType(mappedChar);
+    }
 }
 
 char App::getTranslatedLetter() {

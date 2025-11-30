@@ -1,5 +1,6 @@
 #pragma once
 
+#include "keyboard-layouts.h"
 #include "settings-storage.h"
 
 /// @brief A wrapper around the StoredSettings, translating ticks into milliseconds.
@@ -36,6 +37,19 @@ class Settings {
     inline unsigned int getToneVolumePercent() const { return _storage->get()->toneVolumePercent; }
     inline unsigned int getToneFrequencyHertz() const { return _storage->get()->toneFrequencyHertz; }
 
+    inline bool getKeyboardEnabled() const { return _storage->get()->keyboardEnabled; }
+
+    inline const KeyboardLayout* getKeyboardLayout() const {
+        switch (_storage->get()->keyboardEnabled) {
+            case KEYBOARD_LAYOUT_DVORAK:
+                return &_dvorakKeyboardLayout;
+            default:
+                return &_defaultKeyboardLayout;
+        }
+    }
+
    private:
     SettingsStorage* _storage;
+    DefaultKeyboardLayout _defaultKeyboardLayout;
+    DvorakKeyboardLayout _dvorakKeyboardLayout;
 };

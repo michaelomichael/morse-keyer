@@ -72,6 +72,8 @@ Settings are:
 | `toneEnabled`                | Boolean | Turns the speaker on or off (if connected).                                                                                                                                   | true          |
 | `toneVolumePercent`          | Integer | Maximum volume of the tone played by the speaker. (Not currently used.)                                                                                                       | 50            |
 | `toneFrequencyHertz`         | Integer | Frequency of the tone played by the speaker.                                                                                                                                  | 440           |
+| `keyboardEnabled`            | Boolean | Whether to send keyboard events to the USB host computer.                                                                                                                     | true          |
+| `keyboardLayout`             | Integer | Choose between 0 (QWERTY) and 1 (Dvorak).                                                                                                                                     | 0             |
 
 You can configure these settings by sending the following commands using the PlatformIO/Arduino serial monitor, with rate=115,200 baud and line ending=linefeed (`\n`).
 

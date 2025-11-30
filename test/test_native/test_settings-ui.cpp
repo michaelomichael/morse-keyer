@@ -41,6 +41,8 @@ void initToKnownValues(StoredSettings* settings) {
     settings->toneEnabled = true;
     settings->toneVolumePercent = 50;
     settings->toneFrequencyHertz = 440;
+    settings->keyboardEnabled = true;
+    settings->keyboardLayout = 0;
 }
 
 TEST(ListSettingsCommand, ShouldInitializeAndTick) {
@@ -89,7 +91,7 @@ TEST(ListSettings, ShouldPrintSettings) {
     }
     {
         InSequence seq;
-        EXPECT_CALL(adapter, write("OK: 12\n"));
+        EXPECT_CALL(adapter, write("OK: 14\n"));
 
         EXPECT_CALL(adapter, write("  "));
         EXPECT_CALL(adapter, write("loggingEnabled"));
@@ -161,6 +163,18 @@ TEST(ListSettings, ShouldPrintSettings) {
         EXPECT_CALL(adapter, write("toneFrequencyHertz"));
         EXPECT_CALL(adapter, write(" = "));
         EXPECT_CALL(adapter, writeUnsignedInt(440));
+        EXPECT_CALL(adapter, write("\n"));
+
+        EXPECT_CALL(adapter, write("  "));
+        EXPECT_CALL(adapter, write("keyboardEnabled"));
+        EXPECT_CALL(adapter, write(" = "));
+        EXPECT_CALL(adapter, writeBool(true));
+        EXPECT_CALL(adapter, write("\n"));
+
+        EXPECT_CALL(adapter, write("  "));
+        EXPECT_CALL(adapter, write("keyboardLayout"));
+        EXPECT_CALL(adapter, write(" = "));
+        EXPECT_CALL(adapter, writeUnsignedInt(0));
         EXPECT_CALL(adapter, write("\n"));
     }
     underTest.tick();
@@ -282,6 +296,8 @@ void expectSettings(StoredSettings* actual, StoredSettings* expected) {
     EXPECT_EQ(actual->toneEnabled, expected->toneEnabled);
     EXPECT_EQ(actual->toneVolumePercent, expected->toneVolumePercent);
     EXPECT_EQ(actual->toneFrequencyHertz, expected->toneFrequencyHertz);
+    EXPECT_EQ(actual->keyboardEnabled, expected->keyboardEnabled);
+    EXPECT_EQ(actual->keyboardLayout, expected->keyboardLayout);
 }
 
 void setBoolTest(const char* settingKey, bool newValue, StoredSettings* expectedSettings) {
@@ -308,7 +324,7 @@ void setBoolTest(const char* settingKey, bool newValue, StoredSettings* expected
     expectSettings(storage.get(), expectedSettings);
 }
 
-void setUnsignedLongTest(const char* settingKey, unsigned int newValue, StoredSettings* expectedSettings) {
+void setUnsignedIntTest(const char* settingKey, unsigned int newValue, StoredSettings* expectedSettings) {
     MockSerialAdapter adapter;
     MockSettingsStorage storage;
     initToKnownValues(storage.get());
@@ -367,14 +383,14 @@ TEST(UpdateSetting, TickDurationMillis) {
     StoredSettings expectedSettings;
     initToKnownValues(&expectedSettings);
     expectedSettings.tickDurationMillis = 42;
-    setUnsignedLongTest("tickDurationMillis", 42, &expectedSettings);
+    setUnsignedIntTest("tickDurationMillis", 42, &expectedSettings);
 }
 
 TEST(UpdateSetting, DebounceMillis) {
     StoredSettings expectedSettings;
     initToKnownValues(&expectedSettings);
     expectedSettings.debounceMillis = 43;
-    setUnsignedLongTest("debounceMillis", 43, &expectedSettings);
+    setUnsignedIntTest("debounceMillis", 43, &expectedSettings);
 }
 
 TEST(UpdateSetting, TicksBeforeNewLetter) {
@@ -430,12 +446,26 @@ TEST(UpdateSetting, ToneVolumePercent) {
     StoredSettings expectedSettings;
     initToKnownValues(&expectedSettings);
     expectedSettings.toneVolumePercent = 100;
-    setUnsignedLongTest("toneVolumePercent", 100, &expectedSettings);
+    setUnsignedIntTest("toneVolumePercent", 100, &expectedSettings);
 }
 
 TEST(UpdateSetting, ToneFrequencyHertz) {
     StoredSettings expectedSettings;
     initToKnownValues(&expectedSettings);
     expectedSettings.toneFrequencyHertz = 1000;
-    setUnsignedLongTest("toneFrequencyHertz", 1000, &expectedSettings);
+    setUnsignedIntTest("toneFrequencyHertz", 1000, &expectedSettings);
+}
+
+TEST(UpdateSetting, KeyboardEnabled) {
+    StoredSettings expectedSettings;
+    initToKnownValues(&expectedSettings);
+    expectedSettings.keyboardEnabled = false;
+    setBoolTest("keyboardEnabled", false, &expectedSettings);
+}
+
+TEST(UpdateSetting, KeyboardLayout) {
+    StoredSettings expectedSettings;
+    initToKnownValues(&expectedSettings);
+    expectedSettings.keyboardLayout = 1;
+    setUnsignedIntTest("keyboardLayout", 1, &expectedSettings);
 }

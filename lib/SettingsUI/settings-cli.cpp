@@ -18,6 +18,8 @@ const char* SETTINGS_KEY_TICKS_BEFORE_REPEAT_BACKSPACE = "ticksBeforeRepeatBacks
 const char* SETTINGS_KEY_TONE_ENABLED = "toneEnabled";
 const char* SETTINGS_KEY_TONE_VOLUME_PERCENT = "toneVolumePercent";
 const char* SETTINGS_KEY_TONE_FREQUENCY_HERTZ = "toneFrequencyHertz";
+const char* SETTINGS_KEY_KEYBOARD_ENABLED = "keyboardEnabled";
+const char* SETTINGS_KEY_KEYBOARD_LAYOUT = "keyboardLayout";
 }  // namespace
 
 SettingsCli::SettingsCli(SerialAdapter* serial, SettingsStorage* storage) {
@@ -45,7 +47,7 @@ void SettingsCli::tick() {
 }
 
 void SettingsCli::handleListCommand() {
-    this->_serial->write("OK: 12\n");
+    this->_serial->write("OK: 14\n");
     this->outputSetting(SETTINGS_KEY_LOGGING_ENABLED, this->_storage->get()->loggingEnabled);
     this->outputSetting(SETTINGS_KEY_TICK_DURATION_MILLIS, this->_storage->get()->tickDurationMillis);
     this->outputSetting(SETTINGS_KEY_DEBOUNCE_MILLIS, this->_storage->get()->debounceMillis);
@@ -58,6 +60,8 @@ void SettingsCli::handleListCommand() {
     this->outputSetting(SETTINGS_KEY_TONE_ENABLED, this->_storage->get()->toneEnabled);
     this->outputSetting(SETTINGS_KEY_TONE_VOLUME_PERCENT, this->_storage->get()->toneVolumePercent);
     this->outputSetting(SETTINGS_KEY_TONE_FREQUENCY_HERTZ, this->_storage->get()->toneFrequencyHertz);
+    this->outputSetting(SETTINGS_KEY_KEYBOARD_ENABLED, this->_storage->get()->keyboardEnabled);
+    this->outputSetting(SETTINGS_KEY_KEYBOARD_LAYOUT, this->_storage->get()->keyboardLayout);
 }
 
 template <typename T>
@@ -100,6 +104,10 @@ void SettingsCli::handleSetCommand() {
         this->validateAndSet(&SerialAdapter::readUnsignedInt, &(this->_storage->get()->toneVolumePercent));
     } else if (strcmp(settingKey, SETTINGS_KEY_TONE_FREQUENCY_HERTZ) == 0) {
         this->validateAndSet(&SerialAdapter::readUnsignedInt, &(this->_storage->get()->toneFrequencyHertz));
+    } else if (strcmp(settingKey, SETTINGS_KEY_KEYBOARD_ENABLED) == 0) {
+        this->validateAndSet(&SerialAdapter::readBool, &(this->_storage->get()->keyboardEnabled));
+    } else if (strcmp(settingKey, SETTINGS_KEY_KEYBOARD_LAYOUT) == 0) {
+        this->validateAndSet(&SerialAdapter::readUnsignedInt, &(this->_storage->get()->keyboardLayout));
     } else {
         this->_serial->write("ERR: Unknown setting key '");
         this->_serial->write(settingKey);
