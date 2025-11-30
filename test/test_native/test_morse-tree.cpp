@@ -16,7 +16,6 @@ TEST(MorseTree, ShouldReturnErrorIfInvalidSymbolProvided) {
 TEST(MorseTree, ShouldReturnNoneIfEmptyStringProvided) { EXPECT_EQ(MorseTree::Incomplete, runTest("")); }
 TEST(MorseTree, ShouldReturnNoneIfIncompleteSequenceProvided) { EXPECT_EQ(MorseTree::Incomplete, runTest("-.-.-")); }
 
-// TODO: Add tests for some invalid sequences
 TEST(MorseTree, ShouldDecodeToCorrectLetter) {
     EXPECT_EQ('a', runTest(".-"));
     EXPECT_EQ('b', runTest("-..."));

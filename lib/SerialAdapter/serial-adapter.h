@@ -2,14 +2,10 @@
 
 #include <inttypes.h>
 
-// #include <stdio.h>  // for size_t
-
 #if defined ARDUINO
-// #include <HardwareSerial.h>
 #include <USBAPI.h>
 #define RealSerial Serial_
 #else
-// #define HardwareSerial void
 #define RealSerial void
 #endif
 

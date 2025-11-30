@@ -1,6 +1,5 @@
 #include "serial-adapter.h"
 
-// #include <cstdlib.h>
 #include <stdlib.h>
 
 #if defined ARDUINO
@@ -65,12 +64,6 @@ bool SerialAdapter::isLineReady() {
 }
 
 const char* SerialAdapter::readWord() {
-    /* "a b\n"
-         ^
-         lbrp: 2
-         out:  "a"
-         i:    1
-         */
     int i = 0;
     while (_lineBufferReadPos < MAX_READ_BUFFER_SIZE - 1) {
         char c = this->_lineBuffer[this->_lineBufferReadPos];
