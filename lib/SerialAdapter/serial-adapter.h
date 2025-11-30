@@ -31,7 +31,7 @@ class SerialAdapter {
     virtual const char* readWord();
     virtual const bool* readBool();
     virtual const float* readFloat();
-    virtual const unsigned long* readUnsignedLong();
+    virtual const unsigned int* readUnsignedInt();
 
     /**
      * Returns true if there were unread characters in the line.
@@ -42,7 +42,7 @@ class SerialAdapter {
     virtual void write(const char* str);
     virtual void writeBool(bool value);
     virtual void writeFloat(float value);
-    virtual void writeUnsignedLong(unsigned long value);
+    virtual void writeUnsignedInt(unsigned int value);
 
    private:
     virtual int read();
@@ -54,5 +54,5 @@ class SerialAdapter {
     char wordBuffer[MAX_READ_BUFFER_SIZE];
     bool boolBuffer;
     float floatBuffer;
-    unsigned long unsignedLongBuffer;
+    unsigned int unsignedIntBuffer;
 };

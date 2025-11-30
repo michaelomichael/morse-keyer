@@ -2,8 +2,8 @@
 
 struct StoredSettings {
     bool loggingEnabled = true;
-    unsigned long tickDurationMillis = 70;
-    unsigned long debounceMillis = 10;
+    unsigned int tickDurationMillis = 70;
+    unsigned int debounceMillis = 10;
     float ticksBeforeNewLetter = 7;
     float ticksBeforeNewWord = 8;
     float ticksBeforeDash = 2.5;
@@ -11,6 +11,6 @@ struct StoredSettings {
     float ticksBeforeSecondBackspace = 13;
     float ticksBeforeRepeatBackspace = 7;
     bool toneEnabled = true;
-    unsigned long toneVolumePercent = 50;
-    unsigned long toneFrequencyHertz = 440;
+    unsigned int toneVolumePercent = 50;
+    unsigned int toneFrequencyHertz = 440;
 };

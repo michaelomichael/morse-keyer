@@ -20,12 +20,12 @@ class MockSerialAdapter : public SerialAdapter {
     MOCK_METHOD(const char*, readWord, (), (override));
     MOCK_METHOD(bool*, readBool, (), (override));
     MOCK_METHOD(float*, readFloat, (), (override));
-    MOCK_METHOD(unsigned long*, readUnsignedLong, (), (override));
+    MOCK_METHOD(unsigned int*, readUnsignedInt, (), (override));
     MOCK_METHOD(bool, skipRestOfLine, (), (override));
     MOCK_METHOD(void, write, (const char* str), (override));
     MOCK_METHOD(void, writeBool, (bool value), (override));
     MOCK_METHOD(void, writeFloat, (float value), (override));
-    MOCK_METHOD(void, writeUnsignedLong, (unsigned long value), (override));
+    MOCK_METHOD(void, writeUnsignedInt, (unsigned int value), (override));
 };
 
 void initToKnownValues(StoredSettings* settings) {
@@ -100,13 +100,13 @@ TEST(ListSettings, ShouldPrintSettings) {
         EXPECT_CALL(adapter, write("  "));
         EXPECT_CALL(adapter, write("tickDurationMillis"));
         EXPECT_CALL(adapter, write(" = "));
-        EXPECT_CALL(adapter, writeUnsignedLong(70));
+        EXPECT_CALL(adapter, writeUnsignedInt(70));
         EXPECT_CALL(adapter, write("\n"));
 
         EXPECT_CALL(adapter, write("  "));
         EXPECT_CALL(adapter, write("debounceMillis"));
         EXPECT_CALL(adapter, write(" = "));
-        EXPECT_CALL(adapter, writeUnsignedLong(10));
+        EXPECT_CALL(adapter, writeUnsignedInt(10));
         EXPECT_CALL(adapter, write("\n"));
 
         EXPECT_CALL(adapter, write("  "));
@@ -154,13 +154,13 @@ TEST(ListSettings, ShouldPrintSettings) {
         EXPECT_CALL(adapter, write("  "));
         EXPECT_CALL(adapter, write("toneVolumePercent"));
         EXPECT_CALL(adapter, write(" = "));
-        EXPECT_CALL(adapter, writeUnsignedLong(50));
+        EXPECT_CALL(adapter, writeUnsignedInt(50));
         EXPECT_CALL(adapter, write("\n"));
 
         EXPECT_CALL(adapter, write("  "));
         EXPECT_CALL(adapter, write("toneFrequencyHertz"));
         EXPECT_CALL(adapter, write(" = "));
-        EXPECT_CALL(adapter, writeUnsignedLong(440));
+        EXPECT_CALL(adapter, writeUnsignedInt(440));
         EXPECT_CALL(adapter, write("\n"));
     }
     underTest.tick();
@@ -224,14 +224,14 @@ TEST(UpdateSetting, InvalidUnsignedLongValue) {
     SettingsCli underTest(&adapter, &storage);
     const char* command = "set";
     const char* settingKey = "tickDurationMillis";
-    unsigned long newValue = 42;
-    unsigned long originalValue = storage.get()->tickDurationMillis;
+    unsigned int newValue = 42;
+    unsigned int originalValue = storage.get()->tickDurationMillis;
 
     {
         InSequence seq;
         EXPECT_CALL(adapter, isLineReady()).WillOnce(Return(true));
         EXPECT_CALL(adapter, readWord()).WillOnce(Return(command)).WillOnce(Return(settingKey));
-        EXPECT_CALL(adapter, readUnsignedLong()).WillOnce(Return(nullptr));
+        EXPECT_CALL(adapter, readUnsignedInt()).WillOnce(Return(nullptr));
         EXPECT_CALL(adapter, skipRestOfLine()).WillOnce(Return(true));
         EXPECT_CALL(adapter, isLineReady()).WillOnce(Return(false));
     }
@@ -308,7 +308,7 @@ void setBoolTest(const char* settingKey, bool newValue, StoredSettings* expected
     expectSettings(storage.get(), expectedSettings);
 }
 
-void setUnsignedLongTest(const char* settingKey, unsigned long newValue, StoredSettings* expectedSettings) {
+void setUnsignedLongTest(const char* settingKey, unsigned int newValue, StoredSettings* expectedSettings) {
     MockSerialAdapter adapter;
     MockSettingsStorage storage;
     initToKnownValues(storage.get());
@@ -319,7 +319,7 @@ void setUnsignedLongTest(const char* settingKey, unsigned long newValue, StoredS
         InSequence seq;
         EXPECT_CALL(adapter, isLineReady()).WillOnce(Return(true));
         EXPECT_CALL(adapter, readWord()).WillOnce(Return(command)).WillOnce(Return(settingKey));
-        EXPECT_CALL(adapter, readUnsignedLong()).WillOnce(Return(&newValue));
+        EXPECT_CALL(adapter, readUnsignedInt()).WillOnce(Return(&newValue));
         EXPECT_CALL(adapter, skipRestOfLine()).WillOnce(Return(true));
         EXPECT_CALL(adapter, isLineReady()).WillOnce(Return(false));
     }

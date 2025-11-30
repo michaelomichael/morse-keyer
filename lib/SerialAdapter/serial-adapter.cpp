@@ -14,7 +14,7 @@ void SerialAdapter::writeBool(bool value) { this->delegate->print(value ? "true"
 
 void SerialAdapter::writeFloat(float value) { this->delegate->print(value); }
 
-void SerialAdapter::writeUnsignedLong(unsigned long value) { this->delegate->print(value); }
+void SerialAdapter::writeUnsignedInt(unsigned int value) { this->delegate->print(value); }
 
 #else
 #include <string.h>
@@ -23,7 +23,7 @@ int SerialAdapter::read() { return -1; };
 void SerialAdapter::write(const char* str) {}
 void SerialAdapter::writeBool(bool value) {}
 void SerialAdapter::writeFloat(float value) {}
-void SerialAdapter::writeUnsignedLong(unsigned long value) {}
+void SerialAdapter::writeUnsignedInt(unsigned int value) {}
 #endif
 
 // TODO: Unit tests
@@ -113,7 +113,7 @@ const float* SerialAdapter::readFloat() {
     }
 }
 
-const unsigned long* SerialAdapter::readUnsignedLong() {
+const unsigned int* SerialAdapter::readUnsignedInt() {
     const char* word = this->readWord();
 
     if (word == nullptr) {
@@ -121,10 +121,10 @@ const unsigned long* SerialAdapter::readUnsignedLong() {
     }
 
     char* pointerToFinalChar;
-    this->unsignedLongBuffer = strtoul(word, &pointerToFinalChar, 10);
+    this->unsignedIntBuffer = strtoul(word, &pointerToFinalChar, 10);
 
-    if (*pointerToFinalChar == '\0' && this->unsignedLongBuffer >= (unsigned long)0) {
-        return &this->unsignedLongBuffer;
+    if (*pointerToFinalChar == '\0' && this->unsignedIntBuffer >= (unsigned int)0) {
+        return &this->unsignedIntBuffer;
     } else {
         return nullptr;
     }

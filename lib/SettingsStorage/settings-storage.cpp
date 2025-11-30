@@ -44,9 +44,9 @@ void SettingsStorage::print(SerialAdapter* serial) {
     serial->write("\n  loggingEnabled: ");
     serial->writeBool(this->_settings.loggingEnabled);
     serial->write("\n  tickDurationMillis: ");
-    serial->writeUnsignedLong(this->_settings.tickDurationMillis);
+    serial->writeUnsignedInt(this->_settings.tickDurationMillis);
     serial->write("\n  debounceMillis: ");
-    serial->writeUnsignedLong(this->_settings.debounceMillis);
+    serial->writeUnsignedInt(this->_settings.debounceMillis);
     serial->write("\n  ticksBeforeNewLetter: ");
     serial->writeFloat(this->_settings.ticksBeforeNewLetter);
     serial->write("\n  ticksBeforeNewWord: ");
@@ -60,9 +60,9 @@ void SettingsStorage::print(SerialAdapter* serial) {
     serial->write("\n  ticksBeforeRepeatBackspace: ");
     serial->writeFloat(this->_settings.ticksBeforeRepeatBackspace);
     serial->write("\n  toneVolumePercent: ");
-    serial->writeUnsignedLong(this->_settings.toneVolumePercent);
+    serial->writeUnsignedInt(this->_settings.toneVolumePercent);
     serial->write("\n  toneFrequencyHertz: ");
-    serial->writeUnsignedLong(this->_settings.toneFrequencyHertz);
+    serial->writeUnsignedInt(this->_settings.toneFrequencyHertz);
     serial->write("\n");
 }
 

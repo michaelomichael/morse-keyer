@@ -16,7 +16,7 @@ class SettingsCli {
     void _handleListCommand();
     void _handleSetCommand();
     void _outputSetting(const char* key, bool value);
-    void _outputSetting(const char* key, unsigned long value);
+    void _outputSetting(const char* key, unsigned int value);
     void _outputSetting(const char* key, float value);
 
     template <typename T>

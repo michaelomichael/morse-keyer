@@ -79,9 +79,9 @@ void SettingsCli::_handleSetCommand() {
     if (strcmp(settingKey, SETTINGS_KEY_LOGGING_ENABLED) == 0) {
         this->_validateAndSet(&SerialAdapter::readBool, &(this->_storage->get()->loggingEnabled));
     } else if (strcmp(settingKey, SETTINGS_KEY_TICK_DURATION_MILLIS) == 0) {
-        this->_validateAndSet(&SerialAdapter::readUnsignedLong, &(this->_storage->get()->tickDurationMillis));
+        this->_validateAndSet(&SerialAdapter::readUnsignedInt, &(this->_storage->get()->tickDurationMillis));
     } else if (strcmp(settingKey, SETTINGS_KEY_DEBOUNCE_MILLIS) == 0) {
-        this->_validateAndSet(&SerialAdapter::readUnsignedLong, &(this->_storage->get()->debounceMillis));
+        this->_validateAndSet(&SerialAdapter::readUnsignedInt, &(this->_storage->get()->debounceMillis));
     } else if (strcmp(settingKey, SETTINGS_KEY_TICKS_BEFORE_NEW_LETTER) == 0) {
         this->_validateAndSet(&SerialAdapter::readFloat, &(this->_storage->get()->ticksBeforeNewLetter));
     } else if (strcmp(settingKey, SETTINGS_KEY_TICKS_BEFORE_NEW_WORD) == 0) {
@@ -97,9 +97,9 @@ void SettingsCli::_handleSetCommand() {
     } else if (strcmp(settingKey, SETTINGS_KEY_TONE_ENABLED) == 0) {
         this->_validateAndSet(&SerialAdapter::readBool, &(this->_storage->get()->toneEnabled));
     } else if (strcmp(settingKey, SETTINGS_KEY_TONE_VOLUME_PERCENT) == 0) {
-        this->_validateAndSet(&SerialAdapter::readUnsignedLong, &(this->_storage->get()->toneVolumePercent));
+        this->_validateAndSet(&SerialAdapter::readUnsignedInt, &(this->_storage->get()->toneVolumePercent));
     } else if (strcmp(settingKey, SETTINGS_KEY_TONE_FREQUENCY_HERTZ) == 0) {
-        this->_validateAndSet(&SerialAdapter::readUnsignedLong, &(this->_storage->get()->toneFrequencyHertz));
+        this->_validateAndSet(&SerialAdapter::readUnsignedInt, &(this->_storage->get()->toneFrequencyHertz));
     } else {
         this->_serial->write("ERR: Unknown setting key '");
         this->_serial->write(settingKey);
@@ -123,10 +123,10 @@ void SettingsCli::_outputSetting(const char* key, float value) {
     this->_serial->write("\n");
 }
 
-void SettingsCli::_outputSetting(const char* key, unsigned long value) {
+void SettingsCli::_outputSetting(const char* key, unsigned int value) {
     this->_serial->write("  ");
     this->_serial->write(key);
     this->_serial->write(" = ");
-    this->_serial->writeUnsignedLong(value);
+    this->_serial->writeUnsignedInt(value);
     this->_serial->write("\n");
 }

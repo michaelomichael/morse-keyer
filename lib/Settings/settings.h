@@ -32,8 +32,8 @@ class Settings {
     }
 
     inline bool getToneEnabled() const { return _storage->get()->toneEnabled; }
-    inline unsigned long getToneVolumePercent() const { return _storage->get()->toneVolumePercent; }
-    inline unsigned long getToneFrequencyHertz() const { return _storage->get()->toneFrequencyHertz; }
+    inline unsigned int getToneVolumePercent() const { return _storage->get()->toneVolumePercent; }
+    inline unsigned int getToneFrequencyHertz() const { return _storage->get()->toneFrequencyHertz; }
 
    private:
     SettingsStorage* _storage;

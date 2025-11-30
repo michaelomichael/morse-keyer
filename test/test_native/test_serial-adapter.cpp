@@ -314,18 +314,18 @@ TEST(ReadFloat, ShouldReturnValueWhenWordIsFloat) {
     EXPECT_EQ(nullptr, underTest.readFloat());
 }
 
-TEST(ReadUnsignedLong, ShouldReturnNullWhenWordIsNull) {
+TEST(ReadUnsignedInt, ShouldReturnNullWhenWordIsNull) {
     MockSerialAdapter underTest;
 
     EXPECT_CALL(underTest, available()).Times(1).WillRepeatedly(Return(1));
     EXPECT_CALL(underTest, read()).Times(1).WillOnce(Return('\n'));
 
     EXPECT_EQ(true, underTest.isLineReady());
-    EXPECT_EQ(nullptr, underTest.readUnsignedLong());
-    EXPECT_EQ(nullptr, underTest.readUnsignedLong());
+    EXPECT_EQ(nullptr, underTest.readUnsignedInt());
+    EXPECT_EQ(nullptr, underTest.readUnsignedInt());
 }
 
-TEST(ReadUnsignedLong, ShouldReturnNullWhenWordIsNotNumeric) {
+TEST(ReadUnsignedInt, ShouldReturnNullWhenWordIsNotNumeric) {
     MockSerialAdapter underTest;
 
     EXPECT_CALL(underTest, available()).Times(4).WillRepeatedly(Return(1));
@@ -337,11 +337,11 @@ TEST(ReadUnsignedLong, ShouldReturnNullWhenWordIsNotNumeric) {
         .WillOnce(Return('\n'));
 
     EXPECT_EQ(true, underTest.isLineReady());
-    EXPECT_EQ(nullptr, underTest.readUnsignedLong());
-    EXPECT_EQ(nullptr, underTest.readUnsignedLong());
+    EXPECT_EQ(nullptr, underTest.readUnsignedInt());
+    EXPECT_EQ(nullptr, underTest.readUnsignedInt());
 }
 
-TEST(ReadUnsignedLong, ShouldReturnNullWhenWordIsFloat) {
+TEST(ReadUnsignedInt, ShouldReturnNullWhenWordIsFloat) {
     MockSerialAdapter underTest;
 
     EXPECT_CALL(underTest, available()).Times(4).WillRepeatedly(Return(1));
@@ -353,11 +353,11 @@ TEST(ReadUnsignedLong, ShouldReturnNullWhenWordIsFloat) {
         .WillOnce(Return('\n'));
 
     EXPECT_EQ(true, underTest.isLineReady());
-    EXPECT_EQ(nullptr, underTest.readUnsignedLong());
-    EXPECT_EQ(nullptr, underTest.readUnsignedLong());
+    EXPECT_EQ(nullptr, underTest.readUnsignedInt());
+    EXPECT_EQ(nullptr, underTest.readUnsignedInt());
 }
 
-TEST(ReadUnsignedLong, ShouldReturnValueWhenWordIsInteger) {
+TEST(ReadUnsignedInt, ShouldReturnValueWhenWordIsInteger) {
     MockSerialAdapter underTest;
 
     EXPECT_CALL(underTest, available()).Times(4).WillRepeatedly(Return(1));
@@ -369,10 +369,9 @@ TEST(ReadUnsignedLong, ShouldReturnValueWhenWordIsInteger) {
         .WillOnce(Return('\n'));
 
     EXPECT_EQ(true, underTest.isLineReady());
-    const unsigned long* result = underTest.readUnsignedLong();
+    const unsigned int* result = underTest.readUnsignedInt();
     EXPECT_NE(nullptr, result);
-    EXPECT_EQ((unsigned long)123, *result);
-    EXPECT_EQ(nullptr, underTest.readUnsignedLong());
+    EXPECT_EQ((unsigned int)123, *result);
+    EXPECT_EQ(nullptr, underTest.readUnsignedInt());
 }
-// TODO: Continue here with checks for readWord, readBool, readFloat, readUnsignedLong
 }  // namespace
