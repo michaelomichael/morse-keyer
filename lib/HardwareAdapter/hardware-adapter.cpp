@@ -3,6 +3,7 @@
 #ifdef ARDUINO
 
 #include <Arduino.h>
+#include <EEPROM.h>
 #include <Keyboard.h>
 
 #define KEYER_PIN 10
@@ -35,6 +36,9 @@ void HardwareAdapter::tone(unsigned int frequencyHertz, unsigned int volumePerce
 
 void HardwareAdapter::noTone() { ::noTone(SPEAKER_PIN); }
 
+uint8_t HardwareAdapter::readEeprom(int address) { return EEPROM.read(address); }
+void HardwareAdapter::writeEeprom(int address, uint8_t value) { EEPROM.write(address, value); }
+
 #else  // Mockable void implementation
 void HardwareAdapter::begin() {}
 unsigned long HardwareAdapter::millis() { return 0; }
@@ -45,4 +49,6 @@ void HardwareAdapter::keyboardType(char c) {};
 void HardwareAdapter::keyboardBackspace() {};
 void HardwareAdapter::tone(unsigned int frequencyHertz, unsigned int volumePercent) {}
 void HardwareAdapter::noTone() {}
+uint8_t HardwareAdapter::readEeprom(int address) { return 0; }
+void HardwareAdapter::writeEeprom(int address, uint8_t value) {}
 #endif

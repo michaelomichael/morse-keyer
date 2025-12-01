@@ -8,7 +8,7 @@ using ::testing::Return;
 namespace {
 class MockSerialAdapter : public SerialAdapter {
    public:
-    MockSerialAdapter() : SerialAdapter(NULL) {}
+    MockSerialAdapter() : SerialAdapter(nullptr) {}
     MOCK_METHOD(int, available, (), (override));
     MOCK_METHOD(int, read, (), (override));
 };

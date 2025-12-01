@@ -10,7 +10,7 @@
 
 SerialAdapter _serialAdapter(&Serial);
 HardwareAdapter _hardwareAdapter;
-SettingsStorage _settingsStorage;
+SettingsStorage _settingsStorage(&_hardwareAdapter);
 Settings _settings(&_settingsStorage);
 SettingsCli _settingsCli(&_serialAdapter, &_settingsStorage);
 MorseTree _morseTree;

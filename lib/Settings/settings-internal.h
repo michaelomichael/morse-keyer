@@ -5,6 +5,9 @@
 
 struct StoredSettings {
     bool loggingEnabled = true;
+    bool toneEnabled = true;
+    bool keyboardEnabled = true;
+    bool _dummy1 = false;
     unsigned int tickDurationMillis = 70;
     unsigned int debounceMillis = 50;
     float ticksBeforeNewLetter = 7;
@@ -13,9 +16,7 @@ struct StoredSettings {
     float ticksBeforeFirstBackspace = 30;
     float ticksBeforeSecondBackspace = 13;
     float ticksBeforeRepeatBackspace = 3;
-    bool toneEnabled = true;
     unsigned int toneVolumePercent = 50;
     unsigned int toneFrequencyHertz = 440;
-    bool keyboardEnabled = true;
     unsigned int keyboardLayout = 0;  // Default
 };

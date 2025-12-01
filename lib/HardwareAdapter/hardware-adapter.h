@@ -1,5 +1,7 @@
 #pragma once
 
+#include <inttypes.h>
+
 // Provides an abstraction around Arduino-specific functions, so that we can mock them in tests.
 class HardwareAdapter {
    public:
@@ -12,4 +14,6 @@ class HardwareAdapter {
     virtual void keyboardBackspace();
     virtual void tone(unsigned int frequencyHertz, unsigned int volumePercent);
     virtual void noTone();
+    virtual uint8_t readEeprom(int address);
+    virtual void writeEeprom(int address, uint8_t value);
 };

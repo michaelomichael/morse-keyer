@@ -1,31 +1,33 @@
 #include "settings-storage.h"
 
-#ifdef ARDUINO
-#include <EEPROM.h>
-#endif
-
-#define MAGIC_NUMBER 0x42
+#define MAGIC_NUMBER 42
 
 bool SettingsStorage::load() {
-    uint8_t magic = 0;
+    uint8_t magic;
     int address = 0;
     this->readEeprom(address, &magic, sizeof(magic));
+    address += sizeof(magic);
 
     if (magic != MAGIC_NUMBER) {
         // EEPROM not initialized, write default settings
         _settings = StoredSettings();
-        this->save();
+        save();
+        return false;
+    }
+
+    uint8_t version;
+    this->readEeprom(address, &version, sizeof(version));
+    address += sizeof(magic);
+
+    if (version != 1) {
+        // Invalid version, just leave what we have already
         return false;
     }
 
     // TODO: read all but the last N bytes of eeprom, then compare the CRC of that to the value stored in the last N
     // bytes
 
-    address += sizeof(magic);
-
-    StoredSettings tempSettings;
-    this->readEeprom(address, (uint8_t*)(&tempSettings), sizeof(tempSettings));
-
+    this->readEeprom(address, (uint8_t*)(&_settings), sizeof(_settings));
     return true;
 }
 
@@ -36,6 +38,21 @@ void SettingsStorage::save() {
     this->writeEeprom(address, &magic, sizeof(magic));
     address += sizeof(magic);
 
+    uint8_t version = 1;
+    this->writeEeprom(address, &version, sizeof(version));
+    address += sizeof(version);
+
+    // TODO: Move the bools together into groups of 4 to get 4-byte alignment
+    struct x {
+        bool someValue = true;
+        bool someValue2 = true;
+        bool someValue3 = true;
+        bool someValue4 = false;
+        unsigned int someValue5 = 70;
+        float someValue6 = 12.45;
+    };
+    x y;
+    // this->writeEeprom(address, (uint8_t*)(&y), sizeof(x));
     this->writeEeprom(address, (uint8_t*)(&(this->_settings)), sizeof(StoredSettings));
 }
 
@@ -68,27 +85,15 @@ void SettingsStorage::print(SerialAdapter* serial) {
 
 void SettingsStorage::readEeprom(int address, uint8_t* dest, int length) {
     for (int i = 0; i < length; ++i) {
-        dest[i] = this->readEeprom(address + i);
+        dest[i] = _hardwareAdapter->readEeprom(address + i);
     }
 }
 
 void SettingsStorage::writeEeprom(int address, uint8_t* src, int length) {
     for (int i = 0; i < length; ++i) {
-        this->writeEeprom(address + i, src[i]);
+        _hardwareAdapter->writeEeprom(address + i, src[i]);
     }
 }
-
-#ifdef ARDUINO
-uint8_t SettingsStorage::readEeprom(int address) { return EEPROM.read(address); }
-void SettingsStorage::writeEeprom(int address, uint8_t value) { EEPROM.write(address, value); }
-#else
-#define EEPROM_SIZE 128
-namespace {
-uint8_t fakeEeprom[EEPROM_SIZE] = {0};
-}
-uint8_t SettingsStorage::readEeprom(int address) { return fakeEeprom[address]; }
-void SettingsStorage::writeEeprom(int address, uint8_t value) { fakeEeprom[address] = value; }
-#endif
 
 /* TODO
 unsigned long eeprom_crc(int length) {

@@ -8,14 +8,14 @@ using ::testing::Return;
 
 class MockSettingsStorage : public SettingsStorage {
    public:
-    MockSettingsStorage() : SettingsStorage() {}
+    MockSettingsStorage() : SettingsStorage(nullptr) {}
     MOCK_METHOD(bool, load, (), (override));
     MOCK_METHOD(void, save, (), (override));
 };
 
 class MockSerialAdapter : public SerialAdapter {
    public:
-    MockSerialAdapter() : SerialAdapter(NULL) {}
+    MockSerialAdapter() : SerialAdapter(nullptr) {}
     MOCK_METHOD(bool, isLineReady, (), (override));
     MOCK_METHOD(const char*, readWord, (), (override));
     MOCK_METHOD(bool*, readBool, (), (override));
@@ -47,7 +47,7 @@ void initToKnownValues(StoredSettings* settings) {
 
 TEST(ListSettingsCommand, ShouldInitializeAndTick) {
     MockSerialAdapter adapter;
-    SettingsCli underTest(&adapter, NULL);
+    SettingsCli underTest(&adapter, nullptr);
 
     EXPECT_CALL(adapter, isLineReady()).Times(1).WillRepeatedly(Return(false));
 
@@ -56,7 +56,7 @@ TEST(ListSettingsCommand, ShouldInitializeAndTick) {
 
 TEST(UnknownCommand, ShouldPrintError) {
     MockSerialAdapter adapter;
-    SettingsCli underTest(&adapter, NULL);
+    SettingsCli underTest(&adapter, nullptr);
 
     {
         InSequence seq;
@@ -77,7 +77,7 @@ TEST(UnknownCommand, ShouldPrintError) {
 
 TEST(ListSettings, ShouldPrintSettings) {
     MockSerialAdapter adapter;
-    SettingsStorage storage;
+    MockSettingsStorage storage;  // Was previously non-mock
     initToKnownValues(storage.get());
     SettingsCli underTest(&adapter, &storage);
     const char* command = "list";

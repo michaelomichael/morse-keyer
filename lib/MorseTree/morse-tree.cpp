@@ -19,7 +19,7 @@ MorseTree::Node* MorseTree::createNode(char letter, Node* dot, Node* dash) {
     return node;
 }
 
-MorseTree::Node* MorseTree::createNode(char letter) { return createNode(letter, NULL, NULL); }
+MorseTree::Node* MorseTree::createNode(char letter) { return createNode(letter, nullptr, nullptr); }
 
 MorseTree::Node* MorseTree::createMorseTree() {
     // clang-format off
