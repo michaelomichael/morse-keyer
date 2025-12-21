@@ -45,9 +45,11 @@ class SerialAdapter {
     virtual void writeUnsignedLong(unsigned long value);
 
    private:
+    virtual bool checkConnection();
     virtual int read();
     virtual int available();
     RealSerial* _delegate;
+    bool isConnectionEstablished = false;
     char _lineBuffer[MAX_READ_BUFFER_SIZE];
     int _lineBufferWritePos = 0;
     int _lineBufferReadPos = 0;

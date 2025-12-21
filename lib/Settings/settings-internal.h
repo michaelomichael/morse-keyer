@@ -17,6 +17,6 @@ struct StoredSettings {
     float ticksBeforeSecondBackspace = 13;
     float ticksBeforeRepeatBackspace = 3;
     unsigned int toneVolumePercent = 50;
-    unsigned int toneFrequencyHertz = 440;
+    unsigned int toneFrequencyHertz = 1220;
     unsigned int keyboardLayout = 0;  // Default
 };

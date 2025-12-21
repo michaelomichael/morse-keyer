@@ -102,7 +102,7 @@ ticksBeforeSecondBackspace 13
 ticksBeforeRepeatBackspace 7
 toneEnabled true
 toneVolumePercent 50
-toneFrequencyHertz 440
+toneFrequencyHertz 1220
 ```
 
 ### Set a Single Value

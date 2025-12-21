@@ -26,7 +26,7 @@ void setStandardValues(SettingsStorage* storage) {
     storage->get()->ticksBeforeSecondBackspace = 13;
     storage->get()->ticksBeforeRepeatBackspace = 3;
     storage->get()->toneVolumePercent = 50;
-    storage->get()->toneFrequencyHertz = 440;
+    storage->get()->toneFrequencyHertz = 1220;
     storage->get()->keyboardLayout = 0;
 }
 
@@ -65,7 +65,7 @@ TEST(Init, ShouldInitialiseWithKnownValues) {
     EXPECT_EQ((float)3, result->ticksBeforeRepeatBackspace);
     EXPECT_EQ((bool)true, result->toneEnabled);
     EXPECT_EQ((unsigned int)50, result->toneVolumePercent);
-    EXPECT_EQ((unsigned int)440, result->toneFrequencyHertz);
+    EXPECT_EQ((unsigned int)1220, result->toneFrequencyHertz);
     EXPECT_EQ((bool)true, result->keyboardEnabled);
     EXPECT_EQ((unsigned int)0, result->keyboardLayout);
 }
@@ -151,9 +151,9 @@ TEST(Save, ShouldSaveValues) {
         EXPECT_CALL(adapter, writeEeprom(i++, 0));
         EXPECT_CALL(adapter, writeEeprom(i++, 0));
 
-        // unsigned int toneFrequencyHertz = 440;
-        EXPECT_CALL(adapter, writeEeprom(i++, 0xb8));
-        EXPECT_CALL(adapter, writeEeprom(i++, 0x01));
+        // unsigned int toneFrequencyHertz = 1220;
+        EXPECT_CALL(adapter, writeEeprom(i++, 0xc4));
+        EXPECT_CALL(adapter, writeEeprom(i++, 0x04));
         EXPECT_CALL(adapter, writeEeprom(i++, 0));
         EXPECT_CALL(adapter, writeEeprom(i++, 0));
 
@@ -247,9 +247,9 @@ TEST(Load, ShouldLoadValuesFromEepromWhenValid) {
     EXPECT_CALL(adapter, readEeprom(i++)).WillOnce(Return(0));
     EXPECT_CALL(adapter, readEeprom(i++)).WillOnce(Return(0));
 
-    // unsigned int toneFrequencyHertz = 440;
-    EXPECT_CALL(adapter, readEeprom(i++)).WillOnce(Return(0xb8));
-    EXPECT_CALL(adapter, readEeprom(i++)).WillOnce(Return(0x01));
+    // unsigned int toneFrequencyHertz = 1220;
+    EXPECT_CALL(adapter, readEeprom(i++)).WillOnce(Return(0xc4));
+    EXPECT_CALL(adapter, readEeprom(i++)).WillOnce(Return(0x04));
     EXPECT_CALL(adapter, readEeprom(i++)).WillOnce(Return(0));
     EXPECT_CALL(adapter, readEeprom(i++)).WillOnce(Return(0));
 
@@ -275,7 +275,7 @@ TEST(Load, ShouldLoadValuesFromEepromWhenValid) {
     EXPECT_EQ(13, underTest.get()->ticksBeforeSecondBackspace);
     EXPECT_EQ(3, underTest.get()->ticksBeforeRepeatBackspace);
     EXPECT_EQ(50, underTest.get()->toneVolumePercent);
-    EXPECT_EQ(440, underTest.get()->toneFrequencyHertz);
+    EXPECT_EQ(1220, underTest.get()->toneFrequencyHertz);
     EXPECT_EQ(0, underTest.get()->keyboardLayout);
 }
 
@@ -365,9 +365,9 @@ TEST(Load, ShouldSaveCurrentValuesToEepromWhenMagicNumberIsWrong) {
         EXPECT_CALL(adapter, writeEeprom(i++, 0));
         EXPECT_CALL(adapter, writeEeprom(i++, 0));
 
-        // unsigned int toneFrequencyHertz = 440;
-        EXPECT_CALL(adapter, writeEeprom(i++, 0xb8));
-        EXPECT_CALL(adapter, writeEeprom(i++, 0x01));
+        // unsigned int toneFrequencyHertz = 1220;
+        EXPECT_CALL(adapter, writeEeprom(i++, 0xc4));
+        EXPECT_CALL(adapter, writeEeprom(i++, 0x04));
         EXPECT_CALL(adapter, writeEeprom(i++, 0));
         EXPECT_CALL(adapter, writeEeprom(i++, 0));
 
@@ -394,7 +394,7 @@ TEST(Load, ShouldSaveCurrentValuesToEepromWhenMagicNumberIsWrong) {
     EXPECT_EQ(13, underTest.get()->ticksBeforeSecondBackspace);
     EXPECT_EQ(3, underTest.get()->ticksBeforeRepeatBackspace);
     EXPECT_EQ(50, underTest.get()->toneVolumePercent);
-    EXPECT_EQ(440, underTest.get()->toneFrequencyHertz);
+    EXPECT_EQ(1220, underTest.get()->toneFrequencyHertz);
     EXPECT_EQ(0, underTest.get()->keyboardLayout);
 }
 

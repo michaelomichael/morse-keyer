@@ -131,7 +131,7 @@ void App::checkKeyerState() {
 
             bool isDot = (millisSinceLastEvent < _settings->getDashMillis());
 
-            if (strlen(_morseSymbolsInCurrentLetter) > MAX_MORSE_SYMBOLS_PER_LETTER) {
+            if (strlen(_morseSymbolsInCurrentLetter) >= MAX_MORSE_SYMBOLS_PER_LETTER - 1) {
                 log("Too many symbols added for this letter already. Will discard this one.");
             } else {
                 strcat(_morseSymbolsInCurrentLetter, isDot ? "." : "-");

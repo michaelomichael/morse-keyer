@@ -40,7 +40,7 @@ void initToKnownValues(StoredSettings* settings) {
     settings->ticksBeforeRepeatBackspace = 7.0;
     settings->toneEnabled = true;
     settings->toneVolumePercent = 50;
-    settings->toneFrequencyHertz = 440;
+    settings->toneFrequencyHertz = 1220;
     settings->keyboardEnabled = true;
     settings->keyboardLayout = 0;
 }
@@ -162,7 +162,7 @@ TEST(ListSettings, ShouldPrintSettings) {
         EXPECT_CALL(adapter, write("  "));
         EXPECT_CALL(adapter, write("toneFrequencyHertz"));
         EXPECT_CALL(adapter, write(" = "));
-        EXPECT_CALL(adapter, writeUnsignedInt(440));
+        EXPECT_CALL(adapter, writeUnsignedInt(1220));
         EXPECT_CALL(adapter, write("\n"));
 
         EXPECT_CALL(adapter, write("  "));

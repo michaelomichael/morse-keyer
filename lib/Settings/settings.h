@@ -40,7 +40,7 @@ class Settings {
     inline bool getKeyboardEnabled() const { return _storage->get()->keyboardEnabled; }
 
     inline const KeyboardLayout* getKeyboardLayout() const {
-        switch (_storage->get()->keyboardEnabled) {
+        switch (_storage->get()->keyboardLayout) {
             case KEYBOARD_LAYOUT_DVORAK:
                 return &_dvorakKeyboardLayout;
             default:

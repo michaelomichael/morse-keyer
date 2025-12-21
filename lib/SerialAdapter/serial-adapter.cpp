@@ -4,30 +4,46 @@
 
 #if defined ARDUINO
 
-void SerialAdapter::begin() {
-    Serial.begin(115200);
+void SerialAdapter::begin() { Serial.begin(115200); }
 
-    while (!Serial) {
-        ;  // Wait for the USB CDC serial connection to be established
+bool SerialAdapter::checkConnection() {
+    if (Serial) {
+        if (!this->isConnectionEstablished) {
+            this->_delegate->write("Morse Keyer! Commands are:\n");
+            this->_delegate->write("    list\n");
+            this->_delegate->write("    set <property> <value>\n");
+            this->_delegate->write("\n");
+            this->isConnectionEstablished = true;
+        }
+        return true;
     }
+    return false;
 }
 
-int SerialAdapter::available() { return this->_delegate->available(); }
+int SerialAdapter::available() {
+    if (!this->checkConnection()) {
+        return 0;
+    }
+    return this->_delegate->available();
+}
 int SerialAdapter::read() { return this->_delegate->read(); }
 
-void SerialAdapter::write(const char* str) { this->_delegate->print(str); }
+void SerialAdapter::write(const char* str) { this->checkConnection() && this->_delegate->print(str); }
 
-void SerialAdapter::writeBool(bool value) { this->_delegate->print(value ? "true" : "false"); }
+void SerialAdapter::writeBool(bool value) {
+    this->checkConnection() && this->_delegate->print(value ? "true" : "false");
+}
 
-void SerialAdapter::writeFloat(float value) { this->_delegate->print(value); }
+void SerialAdapter::writeFloat(float value) { this->checkConnection() && this->_delegate->print(value); }
 
-void SerialAdapter::writeUnsignedInt(unsigned int value) { this->_delegate->print(value); }
+void SerialAdapter::writeUnsignedInt(unsigned int value) { this->checkConnection() && this->_delegate->print(value); }
 
-void SerialAdapter::writeUnsignedLong(unsigned long value) { this->_delegate->print(value); }
+void SerialAdapter::writeUnsignedLong(unsigned long value) { this->checkConnection() && this->_delegate->print(value); }
 
 #else
 #include <string.h>
 void SerialAdapter::begin() {}
+bool SerialAdapter::checkConnection() { return true; }
 int SerialAdapter::available() { return 0; }
 int SerialAdapter::read() { return -1; };
 void SerialAdapter::write(const char* str) {}
@@ -37,8 +53,7 @@ void SerialAdapter::writeUnsignedInt(unsigned int value) {}
 void SerialAdapter::writeUnsignedLong(unsigned long value) {}
 #endif
 
-// TODO - this feels massively over-engineered, can we not just rely on the client sending
-// only complete lines?
+// TODO: this feels massively over-engineered, can we not just rely on the client sending only complete lines?
 bool SerialAdapter::isLineReady() {
     while (this->available() > 0) {
         int result = this->read();
